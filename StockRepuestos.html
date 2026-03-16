@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;line-height:normal}
 body{background:#F5F0FF;color:#2D1F5E;min-height:100vh}
@@ -80,7 +81,7 @@ tr:hover td{background:#FAF7FF}
 .mfl{font-size:12px;color:#7A6A9E;margin-bottom:4px;display:block;font-weight:700}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .mact{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
-.sinp{padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:220px}
+.sinp{padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none}
 .tbtn{flex:1;padding:8px;border:2px solid #D8CAF0;border-radius:8px;text-align:center;cursor:pointer;font-size:13px;background:#fff;color:#7A6A9E;font-weight:700;user-select:none}
 .tbtn.e{background:#EDFAF2;color:#1E6640;border-color:#90D4AC}
 .tbtn.s{background:#FDEAF4;color:#7A2D5A;border-color:#E8A0C4}
@@ -125,7 +126,6 @@ tr:hover td{background:#FAF7FF}
 .loading{position:fixed;inset:0;background:rgba(245,240,255,.9);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-size:14px;color:#7C5CBF;font-weight:700}
 .spinner{width:36px;height:36px;border:3px solid #D8CAF0;border-top-color:#9B7FD4;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* PIN */
 .pin-dots{display:flex;gap:12px;justify-content:center;margin:16px 0}
 .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #D8CAF0;background:#fff}
 .pin-dot.filled{background:#9B7FD4;border-color:#9B7FD4}
@@ -134,20 +134,18 @@ tr:hover td{background:#FAF7FF}
 .pin-key:hover{background:#F0EAF9}
 .pin-key.del{background:#FDEAEA;color:#8B2E2E;border-color:#F0B0B0}
 .pin-err{color:#8B2E2E;font-size:13px;text-align:center;margin-top:8px;min-height:20px}
-/* CARGA INVENTARIO */
 .carga-item{background:#fff;border:2px solid #D8CAF0;border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .carga-item-info{flex:1}
 .carga-item-nom{font-weight:700;font-size:13px;color:#2D1F5E}
 .carga-item-cod{font-size:11px;color:#7A6A9E;margin-top:2px}
+.carga-item-stock{font-size:12px;color:#7C5CBF;font-weight:700;margin-top:3px}
 .carga-item-cant{display:flex;align-items:center;gap:8px}
 .carga-item-cant button{width:28px;height:28px;border-radius:6px;border:2px solid #D8CAF0;background:#F5F0FF;font-size:16px;cursor:pointer;font-weight:700;color:#7C5CBF;display:flex;align-items:center;justify-content:center}
 .carga-item-cant input{width:52px;text-align:center;padding:4px 6px;font-size:14px;font-weight:700}
-/* STATS HISTORIAL */
 .hist-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
 .hsc{background:#fff;border-radius:10px;padding:12px;border:2px solid #D8CAF0;text-align:center}
 .hsl{font-size:11px;color:#7A6A9E;margin-bottom:4px}
 .hsv{font-size:20px;font-weight:700;color:#2D1F5E}
-/* CATEGORIAS MULTI */
 .cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .cat-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:12px;background:#F0EBF8;color:#7C5CBF;border:1px solid #D8CAF0;cursor:pointer}
 .cat-chip.sel{background:#9B7FD4;color:#fff;border-color:#9B7FD4}
@@ -166,7 +164,7 @@ tr:hover td{background:#FAF7FF}
       <ol>
         <li>Abrí <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a></li>
         <li>Bases de datos - Realtime Database - Crear - Modo prueba - Habilitar</li>
-        <li>Seguridad - Authentication - Comenzar - Correo contrasena - Habilitar - Guardar</li>
+        <li>Seguridad - Authentication - Comenzar - Correo/contrasena - Habilitar - Guardar</li>
         <li>Configuracion del proyecto - General - Agregar app - Web - Registrar - copiar firebaseConfig</li>
       </ol>
     </div>
@@ -221,7 +219,6 @@ tr:hover td{background:#FAF7FF}
     </div>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="pg on" id="pg-dash">
     <div class="stats" id="stats"></div>
     <div id="alertas"></div>
@@ -229,28 +226,29 @@ tr:hover td{background:#FAF7FF}
     <div id="dmov"></div>
   </div>
 
-  <!-- PRODUCTOS -->
   <div class="pg" id="pg-prod">
     <div class="sh">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <input class="sinp" id="qprod" placeholder="Buscar...">
+        <input class="sinp" id="qprod" placeholder="Buscar..." style="width:180px">
         <select id="filtro-cat-prod" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:160px">
           <option value="">Todas las categorias</option>
         </select>
       </div>
-      <button class="ib pri" id="btn-nuevo">+ Nuevo repuesto</button>
+      <div style="display:flex;gap:8px">
+        <button class="ib grn" id="btn-exportar">Exportar Excel</button>
+        <button class="ib pri" id="btn-nuevo">+ Nuevo repuesto</button>
+      </div>
     </div>
     <div id="tprod"></div>
   </div>
 
-  <!-- RETIROS -->
   <div class="pg" id="pg-mov">
     <div style="max-width:480px">
       <div class="stit" style="margin-bottom:14px">Registrar retiro</div>
       <div class="sarea">
         <span class="ssit">Escanear repuesto</span>
         <div class="srow"><input type="text" id="scan-inp" placeholder="Lector USB o escribi el codigo..."><button class="ib" id="btn-cam">Camara</button></div>
-        <span class="shint">Con lector USB: enfoca el campo y escaneá.</span>
+        <span class="shint">Con lector USB: enfoca el campo y escanea.</span>
       </div>
       <div class="camwrap" id="camwrap"><video id="camvid" autoplay playsinline muted></video><div class="camovl"><div class="camfrm"></div></div></div>
       <div style="text-align:right;margin-bottom:8px;display:none" id="stopcam-wrap"><button class="ib sm" id="btn-stopcam">Cerrar camara</button></div>
@@ -270,16 +268,21 @@ tr:hover td{background:#FAF7FF}
     </div>
   </div>
 
-  <!-- CARGA INVENTARIO -->
   <div class="pg" id="pg-carga">
     <div class="stit" style="margin-bottom:16px">Carga de inventario</div>
     <div style="max-width:600px">
-      <div class="mfg">
-        <label class="mfl">Selecciona una categoria para cargar</label>
-        <select id="carga-cat-sel" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%">
-          <option value="">-- Selecciona categoria --</option>
-          <option value="__sin_categoria__">Sin categoria</option>
-        </select>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div style="flex:1;min-width:180px">
+          <label class="mfl">Categoria</label>
+          <select id="carga-cat-sel" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%">
+            <option value="">-- Ver todos --</option>
+            <option value="__sin_categoria__">Sin categoria</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label class="mfl">Buscar por nombre</label>
+          <input type="text" id="carga-buscar" placeholder="Escribi el nombre del repuesto..." style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%">
+        </div>
       </div>
       <div id="carga-lista"></div>
       <div id="carga-actions" style="display:none;margin-top:16px">
@@ -291,7 +294,6 @@ tr:hover td{background:#FAF7FF}
     </div>
   </div>
 
-  <!-- HISTORIAL -->
   <div class="pg" id="pg-hist">
     <div class="sh">
       <span class="stit">Historial</span>
@@ -311,7 +313,7 @@ tr:hover td{background:#FAF7FF}
         </select>
       </div>
       <div>
-        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Periodo rapido</div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Periodo</div>
         <select id="fhist-periodo" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
           <option value="">Todos los tiempos</option>
           <option value="7">Ultimos 7 dias</option>
@@ -320,14 +322,14 @@ tr:hover td{background:#FAF7FF}
           <option value="custom">Rango personalizado</option>
         </select>
       </div>
-      <div id="fhist-custom" style="display:none;display:flex;gap:6px;align-items:flex-end">
+      <div id="fhist-custom" style="display:none;gap:6px;align-items:flex-end">
         <div>
           <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Desde</div>
-          <input type="date" id="fhist-desde" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <input type="date" id="fhist-desde" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:auto">
         </div>
         <div>
           <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Hasta</div>
-          <input type="date" id="fhist-hasta" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <input type="date" id="fhist-hasta" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:auto">
         </div>
       </div>
       <button class="ib pri sm" id="btn-fhist-aplicar">Aplicar</button>
@@ -336,13 +338,16 @@ tr:hover td{background:#FAF7FF}
       <div class="hist-stats" id="hist-stats"></div>
       <div style="font-size:14px;font-weight:700;color:#2D1F5E;margin:16px 0 8px">Detalle por repuesto</div>
       <div id="hist-detalle"></div>
+      <div style="margin:16px 0 8px"></div>
     </div>
     <div id="thist"></div>
   </div>
 
-  <!-- QR -->
   <div class="pg" id="pg-qr">
     <div class="sh"><span class="stit">Codigos QR</span></div>
+    <div style="margin-bottom:12px">
+      <input type="text" id="qr-buscar" placeholder="Buscar por nombre o codigo..." style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%;max-width:320px">
+    </div>
     <div class="qtbar">
       <button class="ib pri" id="btn-psel" disabled>Imprimir sel. (<span id="selcnt">0</span>)</button>
       <button class="ib" id="btn-pall">Imprimir todos</button>
@@ -353,24 +358,23 @@ tr:hover td{background:#FAF7FF}
   </div>
 </div>
 
-<!-- MODAL PRODUCTO -->
 <div class="mbg" id="modal">
   <div class="modal">
     <span class="mtit" id="mtit">Nuevo repuesto</span>
     <div class="mfg"><label class="mfl">Codigo</label><input type="text" id="fcod" placeholder="REP-001"></div>
     <div class="mfg"><label class="mfl">Nombre</label><input type="text" id="fnom" placeholder="Filtro de aceite"></div>
     <div class="mfg">
-      <label class="mfl">Sinonimos (otros nombres que usan los empleados)</label>
+      <label class="mfl">Sinonimos (otros nombres)</label>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input type="text" id="fsin-input" placeholder="Ej: broca, mecha, taladro..." style="flex:1">
+        <input type="text" id="fsin-input" placeholder="Ej: broca, mecha..." style="flex:1">
         <button class="ib sm pri" id="btn-fsin-add" style="white-space:nowrap">Agregar</button>
       </div>
       <div id="fsin-chips" class="cat-chips"></div>
     </div>
     <div class="mfg">
-      <label class="mfl">Categorias (podes asignar varias)</label>
+      <label class="mfl">Categorias</label>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input type="text" id="fcat-input" placeholder="Escribe una categoria y presiona Agregar" style="flex:1">
+        <input type="text" id="fcat-input" placeholder="Escribe una categoria..." style="flex:1">
         <button class="ib sm pri" id="btn-fcat-add" style="white-space:nowrap">Agregar</button>
       </div>
       <div id="fcat-chips" class="cat-chips"></div>
@@ -383,40 +387,28 @@ tr:hover td{background:#FAF7FF}
   </div>
 </div>
 
-<!-- MODAL PIN -->
 <div class="mbg" id="modal-pin">
   <div class="modal" style="max-width:300px;text-align:center">
     <span class="mtit">Codigo de seguridad</span>
     <p style="font-size:13px;color:#7A6A9E;margin-bottom:16px">Ingresa el codigo de 4 digitos para confirmar la carga</p>
     <div class="pin-dots" id="pin-dots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
     </div>
     <div class="pin-pad">
-      <div class="pin-key" onclick="pinKey('1')">1</div>
-      <div class="pin-key" onclick="pinKey('2')">2</div>
-      <div class="pin-key" onclick="pinKey('3')">3</div>
-      <div class="pin-key" onclick="pinKey('4')">4</div>
-      <div class="pin-key" onclick="pinKey('5')">5</div>
-      <div class="pin-key" onclick="pinKey('6')">6</div>
-      <div class="pin-key" onclick="pinKey('7')">7</div>
-      <div class="pin-key" onclick="pinKey('8')">8</div>
-      <div class="pin-key" onclick="pinKey('9')">9</div>
-      <div class="pin-key" onclick="pinCancel()">Cancel</div>
-      <div class="pin-key" onclick="pinKey('0')">0</div>
-      <div class="pin-key del" onclick="pinDel()">Del</div>
+      <div class="pin-key" onclick="pinKey('1')">1</div><div class="pin-key" onclick="pinKey('2')">2</div><div class="pin-key" onclick="pinKey('3')">3</div>
+      <div class="pin-key" onclick="pinKey('4')">4</div><div class="pin-key" onclick="pinKey('5')">5</div><div class="pin-key" onclick="pinKey('6')">6</div>
+      <div class="pin-key" onclick="pinKey('7')">7</div><div class="pin-key" onclick="pinKey('8')">8</div><div class="pin-key" onclick="pinKey('9')">9</div>
+      <div class="pin-key" onclick="pinCancel()">Cancel</div><div class="pin-key" onclick="pinKey('0')">0</div><div class="pin-key del" onclick="pinDel()">Del</div>
     </div>
     <div class="pin-err" id="pin-err"></div>
   </div>
 </div>
 
-<!-- MODAL LIMPIAR -->
 <div class="mbg" id="modal-limpiar">
   <div class="modal">
     <span class="mtit">Limpiar historial</span>
-    <p style="font-size:13px;color:#7A6A9E;margin-bottom:16px">Los movimientos anteriores a la fecha elegida se borran permanentemente. El stock actual no se modifica.</p>
+    <p style="font-size:13px;color:#7A6A9E;margin-bottom:16px">Los movimientos anteriores a la fecha elegida se borran permanentemente.</p>
     <div class="mfg"><label class="mfl">Borrar movimientos anteriores a</label><input type="date" id="limpiar-fecha"></div>
     <div id="limpiar-preview" style="font-size:13px;color:#7A5500;background:#FFF8E6;border:1px solid #F0D080;border-radius:8px;padding:8px 12px;margin-bottom:4px;display:none"></div>
     <div class="mact">
@@ -430,19 +422,19 @@ tr:hover td{background:#FAF7FF}
 (function(){
 var fbAuth=null,fbDb=null,currentUser=null;
 var productos={},movimientos={};
-var movTipo='salida',editId=null,selectedPid=null,qrSelected={};
+var editId=null,selectedPid=null,qrSelected={};
 var scanStream=null,scanRAF=null,acInp,acList,hiIdx=-1;
 var pinBuffer='',pinCallback=null;
-var fcatList=[];
-var fsinList=[];
+var fcatList=[],fsinList=[];
+var cargaCants={};
 
 function G(id){return document.getElementById(id);}
 function showLoad(v){G('loading').style.display=v?'flex':'none';}
 function showScreen(id){
   ['screen-setup','screen-login','screen-reg'].forEach(function(s){G(s).classList.remove('on');});
   G('main-app').classList.remove('on');
-  if(id==='main'){G('main-app').classList.add('on');}
-  else{G('screen-'+id).classList.add('on');}
+  if(id==='main')G('main-app').classList.add('on');
+  else G('screen-'+id).classList.add('on');
   showLoad(false);
 }
 function showErr(id,msg){var el=G(id);el.textContent=msg;el.classList.add('on');setTimeout(function(){el.classList.remove('on');},5000);}
@@ -451,26 +443,17 @@ function fmt(ts){var d=new Date(ts);return('0'+d.getDate()).slice(-2)+'/'+('0'+(
 function pArr(){return Object.values(productos);}
 function mArr(){return Object.values(movimientos);}
 function stBadge(p){if(p.stock<=0)return'<span class="badge bout">Sin stock</span>';if(p.stock<=p.min)return'<span class="badge blow">Stock bajo</span>';return'<span class="badge bok">OK</span>';}
-function getCats(p){
-  if(!p.cats)return p.cat?[p.cat]:[];
-  if(typeof p.cats==='string')return[p.cats];
-  return p.cats;
-}
-function allCats(){
-  var set={};
-  pArr().forEach(function(p){getCats(p).forEach(function(c){if(c)set[c]=1;});});
-  return Object.keys(set).sort();
-}
+function getCats(p){if(!p.cats)return p.cat?[p.cat]:[];if(typeof p.cats==='string')return[p.cats];return p.cats;}
+function getSins(p){if(!p.sins)return[];if(typeof p.sins==='string')return[p.sins];return p.sins;}
+function allCats(){var set={};pArr().forEach(function(p){getCats(p).forEach(function(c){if(c)set[c]=1;});});return Object.keys(set).sort();}
+function matchSearch(p,q){if(!q)return true;var lq=q.toLowerCase();return p.nom.toLowerCase().includes(lq)||p.cod.toLowerCase().includes(lq)||getCats(p).join(' ').toLowerCase().includes(lq)||getSins(p).some(function(s){return s.toLowerCase().includes(lq);});}
 
 function tryLoadCfg(){try{var s=localStorage.getItem('sr_cfg');if(s){var c=JSON.parse(s);if(c&&c.apiKey)return c;}}catch(e){}return null;}
 function parseCfg(txt){
-  try{
-    var obj={};
-    var pairs=txt.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"([^"]*)"/g);
-    if(!pairs||pairs.length<3)return null;
-    pairs.forEach(function(pair){var m=pair.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"([^"]*)"/);if(m)obj[m[1]]=m[2];});
-    return obj.apiKey?obj:null;
-  }catch(e){return null;}
+  try{var obj={};var pairs=txt.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"([^"]*)"/g);
+  if(!pairs||pairs.length<3)return null;
+  pairs.forEach(function(pair){var m=pair.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"([^"]*)"/);if(m)obj[m[1]]=m[2];});
+  return obj.apiKey?obj:null;}catch(e){return null;}
 }
 
 function initFB(cfg){
@@ -481,13 +464,13 @@ function initFB(cfg){
     fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function(){
       fbAuth.onAuthStateChanged(function(user){if(user){currentUser=user;startApp();}else{showScreen('login');}});
     }).catch(function(){fbAuth.onAuthStateChanged(function(user){if(user){currentUser=user;startApp();}else{showScreen('login');}});});
-  }catch(e){showLoad(false);showErr('err-setup','Error Firebase: '+e.message);}
+  }catch(e){showLoad(false);showErr('err-setup','Error: '+e.message);}
 }
 
 G('btn-setup').onclick=function(){
-  var txt=G('setup-cfg').value.trim();var cfg=parseCfg(txt);
+  var cfg=parseCfg(G('setup-cfg').value.trim());
   if(!cfg||!cfg.apiKey){showErr('err-setup','No se pudo leer el config.');return;}
-  if(!cfg.databaseURL){showErr('err-setup','Falta databaseURL. Crea el Realtime Database primero.');return;}
+  if(!cfg.databaseURL){showErr('err-setup','Falta databaseURL.');return;}
   localStorage.setItem('sr_cfg',JSON.stringify(cfg));initFB(cfg);
 };
 G('btn-toreg').onclick=function(){showScreen('reg');};
@@ -506,43 +489,37 @@ G('l-pass').onkeydown=function(e){if(e.key==='Enter')G('btn-login').click();};
 G('btn-reg').onclick=function(){
   var name=G('r-name').value.trim(),email=G('r-email').value.trim(),pass=G('r-pass').value;
   if(!name||!email||!pass){showErr('err-reg','Completa todos los campos');return;}
-  if(pass.length<6){showErr('err-reg','La contrasena debe tener al menos 6 caracteres');return;}
+  if(pass.length<6){showErr('err-reg','Min. 6 caracteres');return;}
   showLoad(true);
   fbAuth.createUserWithEmailAndPassword(email,pass).then(function(uc){return uc.user.updateProfile({displayName:name});}).catch(function(e){
     showLoad(false);
-    var msgs={'auth/email-already-in-use':'Este email ya esta registrado.','auth/invalid-email':'Email invalido.','auth/weak-password':'Contrasena muy debil.'};
+    var msgs={'auth/email-already-in-use':'Email ya registrado.','auth/weak-password':'Contrasena muy debil.'};
     showErr('err-reg',msgs[e.code]||e.message);
   });
 };
 G('btn-logout').onclick=function(){stopCam();fbAuth.signOut();productos={};movimientos={};showScreen('login');};
 
-// ---- PIN ----
+// PIN
 window.pinKey=function(k){
   if(pinBuffer.length>=4)return;
   pinBuffer+=k;updPinDots();
   if(pinBuffer.length===4){
-    if(pinBuffer==='1234'){
-      G('modal-pin').classList.remove('on');
-      pinBuffer='';updPinDots();
-      if(pinCallback){pinCallback();pinCallback=null;}
-    }else{
-      G('pin-err').textContent='Codigo incorrecto';
-      setTimeout(function(){pinBuffer='';updPinDots();G('pin-err').textContent='';},800);
-    }
+    if(pinBuffer==='1234'){G('modal-pin').classList.remove('on');pinBuffer='';updPinDots();if(pinCallback){pinCallback();pinCallback=null;}}
+    else{G('pin-err').textContent='Codigo incorrecto';setTimeout(function(){pinBuffer='';updPinDots();G('pin-err').textContent='';},800);}
   }
 };
 window.pinDel=function(){if(pinBuffer.length>0){pinBuffer=pinBuffer.slice(0,-1);updPinDots();}};
 window.pinCancel=function(){pinBuffer='';updPinDots();G('modal-pin').classList.remove('on');pinCallback=null;};
-function updPinDots(){for(var i=0;i<4;i++){G('pd'+i).className='pin-dot'+(i<pinBuffer.length?' filled':'');}}
+function updPinDots(){for(var i=0;i<4;i++)G('pd'+i).className='pin-dot'+(i<pinBuffer.length?' filled':'');}
 function askPin(cb){pinBuffer='';updPinDots();G('pin-err').textContent='';pinCallback=cb;G('modal-pin').classList.add('on');}
 
 function startApp(){
-  var name=currentUser.displayName||currentUser.email.split('@')[0];
-  G('uchip').textContent=name;showScreen('main');
+  G('uchip').textContent=currentUser.displayName||currentUser.email.split('@')[0];
+  showScreen('main');
   fbDb.ref('productos').on('value',function(snap){
     productos=snap.val()||{};G('sdot').className='sdot';
     var pg=document.querySelector('.pg.on');
-    if(pg){var id=pg.id;if(id==='pg-dash')rDash();if(id==='pg-prod')rProd();if(id==='pg-qr')rQR();if(id==='pg-carga')rCarga();if(id==='pg-hist')rHist();}
+    if(pg){var id=pg.id;if(id==='pg-dash')rDash();if(id==='pg-prod')rProd();if(id==='pg-qr')rQR();if(id==='pg-carga')rCarga();}
     updateCatSelects();
   },function(){G('sdot').className='sdot off';});
   fbDb.ref('movimientos').on('value',function(snap){
@@ -564,7 +541,7 @@ function startApp(){
     var limite=new Date(fecha+'T23:59:59').getTime();
     var aEl=mArr().filter(function(m){return m.ts<=limite;});
     if(!aEl.length)return;
-    if(!confirm('Vas a borrar '+aEl.length+' movimiento'+(aEl.length>1?'s':'')+'. Confirmas?'))return;
+    if(!confirm('Borrar '+aEl.length+' movimiento'+(aEl.length>1?'s':'')+'. Confirmas?'))return;
     var upd={};aEl.forEach(function(m){upd['movimientos/'+m.id]=null;});
     fbDb.ref().update(upd).then(function(){G('modal-limpiar').classList.remove('on');rHist();alert('Historial limpiado.');}).catch(function(e){alert('Error: '+e.message);});
   };
@@ -578,23 +555,26 @@ function updLimpiarPreview(){
   var limite=new Date(fecha+'T23:59:59').getTime();
   var count=mArr().filter(function(m){return m.ts<=limite;}).length;
   if(count===0){prev.style.display='block';prev.textContent='No hay movimientos anteriores a esa fecha.';G('btn-limpiar-confirm').disabled=true;}
-  else{prev.style.display='block';prev.textContent='Se van a borrar '+count+' movimiento'+(count>1?'s':'')+' anteriores al '+fecha+'.';G('btn-limpiar-confirm').disabled=false;}
+  else{prev.style.display='block';prev.textContent='Se van a borrar '+count+' movimiento'+(count>1?'s':'')+'.';G('btn-limpiar-confirm').disabled=false;}
 }
 
 function updateCatSelects(){
   var cats=allCats();
-  ['filtro-cat-prod','carga-cat-sel','fhist-cat','mov-cat-filtro'].forEach(function(sid){
+  ['filtro-cat-prod','fhist-cat','mov-cat-filtro'].forEach(function(sid){
     var sel=G(sid);if(!sel)return;
-    var cur=sel.value;
-    var first=sel.options[0].text;
+    var cur=sel.value,first=sel.options[0].text;
     sel.innerHTML='';
     var opt=document.createElement('option');opt.value='';opt.text=first;sel.appendChild(opt);
     cats.forEach(function(c){var o=document.createElement('option');o.value=c;o.text=c;sel.appendChild(o);});
-    if(sid==='carga-cat-sel'){
-      var osc=document.createElement('option');osc.value='__sin_categoria__';osc.text='Sin categoria';sel.appendChild(osc);
-    }
     sel.value=cur;
   });
+  // carga-cat-sel keeps Sin categoria
+  var ccs=G('carga-cat-sel');if(!ccs)return;
+  var cur2=ccs.value;
+  ccs.innerHTML='<option value="">-- Ver todos --</option>';
+  cats.forEach(function(c){var o=document.createElement('option');o.value=c;o.text=c;ccs.appendChild(o);});
+  var osc=document.createElement('option');osc.value='__sin_categoria__';osc.text='Sin categoria';ccs.appendChild(osc);
+  ccs.value=cur2;
 }
 
 function goPage(name){
@@ -625,16 +605,13 @@ function rProd(){
   var q=(G('qprod').value||'').toLowerCase();
   var catF=G('filtro-cat-prod').value;
   var lista=pArr().filter(function(p){
-    var sins=p.sins||[];
-    var matchQ=!q||p.nom.toLowerCase().includes(q)||p.cod.toLowerCase().includes(q)||sins.some(function(s){return s.toLowerCase().includes(q);});
-    var matchC=!catF||getCats(p).indexOf(catF)>=0;
-    return matchQ&&matchC;
+    return matchSearch(p,q)&&(!catF||getCats(p).indexOf(catF)>=0);
   });
   if(!lista.length){G('tprod').innerHTML='<div class="empty">No hay repuestos que coincidan.</div>';return;}
   var rows='';
   lista.forEach(function(p){
     var cats=getCats(p).map(function(c){return'<span class="cat-tag">'+c+'</span>';}).join('');
-    var sins=(p.sins||[]).map(function(s){return'<span class="cat-tag" style="background:#E6F1FB;color:#185FA5">'+s+'</span>';}).join('');
+    var sins=getSins(p).map(function(s){return'<span class="cat-tag" style="background:#E6F1FB;color:#185FA5">'+s+'</span>';}).join('');
     rows+='<tr><td style="font-weight:700">'+p.cod+'</td><td>'+p.nom+(sins?'<br><span style="font-size:11px;color:#7A6A9E">Alias: </span>'+sins:'')+'</td><td>'+cats+'</td><td style="text-align:right">'+p.stock+'</td><td style="text-align:right;color:#7A6A9E">'+p.min+'</td><td>'+stBadge(p)+'</td><td style="white-space:nowrap"><button class="ib sm" onclick="_ep(\''+p.id+'\')">Editar</button> <button class="ib sm dan" onclick="_dp(\''+p.id+'\')">Borrar</button></td></tr>';
   });
   G('tprod').innerHTML='<table><thead><tr><th>Codigo</th><th>Nombre</th><th>Categorias</th><th>Stock</th><th>Min.</th><th>Estado</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
@@ -642,54 +619,47 @@ function rProd(){
 G('qprod').oninput=rProd;
 G('filtro-cat-prod').onchange=rProd;
 
-// ---- CATEGORIAS MULTI en modal ----
-function renderFcatChips(){
-  var cont=G('fcat-chips');cont.innerHTML='';
-  fcatList.forEach(function(c,i){
-    var chip=document.createElement('span');chip.className='cat-chip sel';
-    chip.innerHTML=c+' <span class="cat-chip-x" onclick="removeFcat('+i+')">x</span>';
-    cont.appendChild(chip);
+// EXPORTAR EXCEL
+G('btn-exportar').onclick=function(){
+  if(typeof XLSX==='undefined'){alert('Error: libreria Excel no cargada.');return;}
+  var pa=pArr();
+  var data=[['Codigo','Nombre','Sinonimos','Categorias','Stock actual','Stock minimo','Estado']];
+  pa.forEach(function(p){
+    var estado=p.stock<=0?'Sin stock':p.stock<=p.min?'Stock bajo':'OK';
+    data.push([p.cod,p.nom,getSins(p).join(', '),getCats(p).join(', '),p.stock,p.min,estado]);
   });
-}
-window.removeFcat=function(i){fcatList.splice(i,1);renderFcatChips();};
+  var ws=XLSX.utils.aoa_to_sheet(data);
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Inventario');
+  // auto column width
+  var cols=data[0].map(function(_,i){return{wch:Math.max.apply(null,data.map(function(r){return r[i]?String(r[i]).length:10;}))+2};});
+  ws['!cols']=cols;
+  XLSX.writeFile(wb,'StockRepuestos_'+new Date().toISOString().slice(0,10)+'.xlsx');
+};
 
-function renderFsinChips(){
-  var cont=G('fsin-chips');if(!cont)return;cont.innerHTML='';
-  fsinList.forEach(function(s,i){
-    var chip=document.createElement('span');chip.className='cat-chip sel';
-    chip.style.background='#E6F1FB';chip.style.color='#185FA5';chip.style.borderColor='#B5D4F4';
-    chip.innerHTML=s+' <span class="cat-chip-x" onclick="removeFsin('+i+')">x</span>';
-    cont.appendChild(chip);
-  });
-}
+// MODAL PRODUCTO
+function renderFcatChips(){var c=G('fcat-chips');if(!c)return;c.innerHTML='';fcatList.forEach(function(v,i){var ch=document.createElement('span');ch.className='cat-chip sel';ch.innerHTML=v+' <span class="cat-chip-x" onclick="removeFcat('+i+')">x</span>';c.appendChild(ch);});}
+function renderFsinChips(){var c=G('fsin-chips');if(!c)return;c.innerHTML='';fsinList.forEach(function(v,i){var ch=document.createElement('span');ch.className='cat-chip sel';ch.style.background='#E6F1FB';ch.style.color='#185FA5';ch.style.borderColor='#B5D4F4';ch.innerHTML=v+' <span class="cat-chip-x" onclick="removeFsin('+i+')">x</span>';c.appendChild(ch);});}
+window.removeFcat=function(i){fcatList.splice(i,1);renderFcatChips();};
 window.removeFsin=function(i){fsinList.splice(i,1);renderFsinChips();};
-G('btn-fsin-add').onclick=function(){
-  var v=G('fsin-input').value.trim().toLowerCase();
-  if(!v)return;
-  if(fsinList.indexOf(v)<0)fsinList.push(v);
-  G('fsin-input').value='';renderFsinChips();
-};
-G('fsin-input').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();G('btn-fsin-add').click();}};
-G('btn-fcat-add').onclick=function(){
-  var v=G('fcat-input').value.trim();
-  if(!v)return;
-  if(fcatList.indexOf(v)<0)fcatList.push(v);
-  G('fcat-input').value='';renderFcatChips();
-};
+G('btn-fcat-add').onclick=function(){var v=G('fcat-input').value.trim();if(!v)return;if(fcatList.indexOf(v)<0)fcatList.push(v);G('fcat-input').value='';renderFcatChips();};
+G('btn-fsin-add').onclick=function(){var v=G('fsin-input').value.trim().toLowerCase();if(!v)return;if(fsinList.indexOf(v)<0)fsinList.push(v);G('fsin-input').value='';renderFsinChips();};
 G('fcat-input').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();G('btn-fcat-add').click();}};
+G('fsin-input').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();G('btn-fsin-add').click();}};
 
 G('btn-nuevo').onclick=function(){
   editId=null;fcatList=[];fsinList=[];G('mtit').textContent='Nuevo repuesto';
-  G('fcod').value='';G('fnom').value='';G('fcat-input').value='';G('fsin-input').value='';renderFcatChips();renderFsinChips();
+  G('fcod').value='';G('fnom').value='';G('fcat-input').value='';G('fsin-input').value='';
+  renderFcatChips();renderFsinChips();
   G('fstk').value=0;G('fstk').disabled=false;G('fmin').value=2;
   G('modal').classList.add('on');
 };
 window._ep=function(id){
   editId=id;var p=productos[id];
-  fcatList=getCats(p).slice();
-  fsinList=p.sins?p.sins.slice():[];
+  fcatList=getCats(p).slice();fsinList=getSins(p).slice();
   G('mtit').textContent='Editar repuesto';
-  G('fcod').value=p.cod;G('fnom').value=p.nom;G('fcat-input').value='';G('fsin-input').value='';renderFcatChips();renderFsinChips();
+  G('fcod').value=p.cod;G('fnom').value=p.nom;G('fcat-input').value='';G('fsin-input').value='';
+  renderFcatChips();renderFsinChips();
   G('fstk').value=p.stock;G('fstk').disabled=true;G('fmin').value=p.min;
   G('modal').classList.add('on');
 };
@@ -699,17 +669,15 @@ G('btn-save').onclick=function(){
   var cod=G('fcod').value.trim(),nom=G('fnom').value.trim();
   if(!cod||!nom){alert('Completa codigo y nombre');return;}
   var stk=parseInt(G('fstk').value)||0,min=parseInt(G('fmin').value)||0;
-  var cats=fcatList.length>0?fcatList:[];
-  var sins=fsinList.slice();
-  if(editId){fbDb.ref('productos/'+editId).update({cod:cod,nom:nom,cats:cats,sins:sins,min:min});}
+  if(editId){fbDb.ref('productos/'+editId).update({cod:cod,nom:nom,cats:fcatList,sins:fsinList,min:min});}
   else{
     if(pArr().find(function(p){return p.cod===cod;})){alert('Codigo ya existente');return;}
-    var nid=uid();fbDb.ref('productos/'+nid).set({id:nid,cod:cod,nom:nom,cats:cats,sins:sins,stock:stk,min:min});
+    var nid=uid();fbDb.ref('productos/'+nid).set({id:nid,cod:cod,nom:nom,cats:fcatList,sins:fsinList,stock:stk,min:min});
   }
   G('modal').classList.remove('on');
 };
 
-// ---- AUTOCOMPLETADO RETIROS ----
+// RETIROS - AUTOCOMPLETADO
 function initAC(){
   acInp=G('acinp');acList=G('aclist');hiIdx=-1;
   acInp.oninput=function(){renderAC();};acInp.onfocus=function(){renderAC();};
@@ -721,20 +689,23 @@ function initAC(){
     else if(e.key==='Escape')closeAC();
   };
   document.addEventListener('click',function(e){var w=G('acwrap');if(w&&!w.contains(e.target))closeAC();});
+  G('mov-cat-filtro').onchange=function(){clearAC();renderAC();};
 }
 function setHi(items){items.forEach(function(el,i){el.classList.toggle('hi',i===hiIdx);});if(items[hiIdx])items[hiIdx].scrollIntoView({block:'nearest'});}
 function renderAC(){
-  var q=(acInp.value||'').toLowerCase().trim();hiIdx=-1;
-  var catF=G('mov-cat-filtro')?G('mov-cat-filtro').value:'';
+  var q=(acInp.value||'').toLowerCase().trim();
+  var catF=G('mov-cat-filtro').value;
+  hiIdx=-1;
   var lista=pArr().filter(function(p){
-    var sins=p.sins||[];
-    var matchQ=!q||p.nom.toLowerCase().includes(q)||p.cod.toLowerCase().includes(q)||(getCats(p).join(' ')).toLowerCase().includes(q)||sins.some(function(s){return s.toLowerCase().includes(q);});
-    var matchC=!catF||getCats(p).indexOf(catF)>=0;
-    return matchQ&&matchC;
+    return matchSearch(p,q)&&(!catF||getCats(p).indexOf(catF)>=0);
   }).slice(0,10);
   if(!lista.length){acList.innerHTML='<span class="acmt">Sin resultados</span>';acList.classList.add('on');return;}
   acList.innerHTML='';
-  lista.forEach(function(p){var el=document.createElement('div');el.className='acitem';el.innerHTML='<span class="accod">'+p.cod+'</span>'+p.nom+'<span class="acstk">Stock: '+p.stock+'</span>';el.onclick=function(){selProd(p.id);};acList.appendChild(el);});
+  lista.forEach(function(p){
+    var el=document.createElement('div');el.className='acitem';
+    el.innerHTML='<span class="accod">'+p.cod+'</span>'+p.nom+'<span class="acstk">Stock: '+p.stock+'</span>';
+    el.onclick=function(){selProd(p.id);};acList.appendChild(el);
+  });
   acList.classList.add('on');
 }
 function closeAC(){if(acList)acList.classList.remove('on');hiIdx=-1;}
@@ -747,9 +718,7 @@ function clearAC(){selectedPid=null;if(acInp){acInp.value='';acInp.classList.rem
 
 function rMovForm(){
   selectedPid=null;if(acInp){acInp.value='';acInp.classList.remove('sel');}if(acList)acList.classList.remove('on');
-  G('sinfo').textContent='';G('srbox').classList.remove('on');G('scan-inp').value='';
-  if(G('mov-cat-filtro'))G('mov-cat-filtro').onchange=function(){closeAC();if(acInp){acInp.value='';acInp.classList.remove('sel');}selectedPid=null;G('sinfo').textContent='';renderAC();};
-  initAC();
+  G('sinfo').textContent='';G('srbox').classList.remove('on');G('scan-inp').value='';initAC();
 }
 
 var scanInp=G('scan-inp');
@@ -776,7 +745,7 @@ G('btn-reg-mov').onclick=function(){
   hideMsg();if(!selectedPid){showMerr('Selecciona un repuesto');return;}
   var cant=parseInt(G('movcant').value)||0,obs=G('movobs').value.trim();
   if(cant<=0){showMerr('La cantidad debe ser mayor a 0');return;}
-  var p=productos[selectedPid];if(!p){showMerr('Repuesto no encontrado');return;}
+  var p=productos[selectedPid];if(!p)return;
   if(cant>p.stock){showMerr('Stock insuficiente. Disponible: '+p.stock);return;}
   var newStock=p.stock-cant;
   var mid=uid(),userName=currentUser.displayName||currentUser.email.split('@')[0];
@@ -789,44 +758,39 @@ function showMok(t){var el=G('mok');el.textContent=t;el.style.display='block';se
 function showMerr(t){var el=G('merr');el.textContent=t;el.style.display='block';setTimeout(function(){el.style.display='none';},4000);}
 function hideMsg(){G('mok').style.display='none';G('merr').style.display='none';}
 
-// ---- CARGA INVENTARIO ----
-var cargaCants={};
+// CARGA INVENTARIO
 function rCarga(){
   cargaCants={};
   var cat=G('carga-cat-sel').value;
+  var q=(G('carga-buscar').value||'').toLowerCase().trim();
+  var lista=pArr().filter(function(p){
+    var matchCat=!cat||(cat==='__sin_categoria__'?getCats(p).length===0:getCats(p).indexOf(cat)>=0);
+    return matchSearch(p,q)&&matchCat;
+  });
   G('carga-lista').innerHTML='';
-  G('carga-actions').style.display='none';
-  if(!cat)return;
-  var lista;
-  if(cat==='__sin_categoria__'){
-    lista=pArr().filter(function(p){return getCats(p).length===0;});
-  }else{
-    lista=pArr().filter(function(p){return getCats(p).indexOf(cat)>=0;});
+  if(!lista.length){
+    G('carga-lista').innerHTML='<div class="empty">No hay repuestos que coincidan.</div>';
+    G('carga-actions').style.display='none';return;
   }
-  if(!lista.length){G('carga-lista').innerHTML='<div class="empty">No hay repuestos en esta categoria.</div>';return;}
   lista.forEach(function(p){
     cargaCants[p.id]=0;
-    var div=document.createElement('div');div.className='carga-item';
-    div.innerHTML='<div class="carga-item-info"><div class="carga-item-nom">'+p.nom+'</div><div class="carga-item-cod">'+p.cod+' | Stock actual: '+p.stock+'</div></div><div class="carga-item-cant"><button onclick="cargaAdj(\''+p.id+'\',-1)">-</button><input type="number" min="0" value="0" id="ci-'+p.id+'" onchange="cargaSet(\''+p.id+'\',this.value)"><button onclick="cargaAdj(\''+p.id+'\',1)">+</button></div>';
+    var div=document.createElement('div');div.className='carga-item';div.id='carga-row-'+p.id;
+    div.innerHTML='<div class="carga-item-info"><div class="carga-item-nom">'+p.nom+'</div><div class="carga-item-cod">'+p.cod+'</div><div class="carga-item-stock">Stock actual: '+p.stock+' unidades</div></div><div class="carga-item-cant"><button onclick="cargaAdj(\''+p.id+'\',-1)">-</button><input type="number" min="0" value="0" id="ci-'+p.id+'" onchange="cargaSet(\''+p.id+'\',this.value)"><button onclick="cargaAdj(\''+p.id+'\',1)">+</button></div>';
     G('carga-lista').appendChild(div);
   });
   G('carga-actions').style.display='block';
   updCargaResumen();
 }
 G('carga-cat-sel').onchange=rCarga;
+G('carga-buscar').oninput=rCarga;
 
-window.cargaAdj=function(id,delta){
-  var inp=G('ci-'+id);if(!inp)return;
-  var v=Math.max(0,(parseInt(inp.value)||0)+delta);
-  inp.value=v;cargaCants[id]=v;updCargaResumen();
-};
+window.cargaAdj=function(id,delta){var inp=G('ci-'+id);if(!inp)return;var v=Math.max(0,(parseInt(inp.value)||0)+delta);inp.value=v;cargaCants[id]=v;updCargaResumen();};
 window.cargaSet=function(id,val){cargaCants[id]=Math.max(0,parseInt(val)||0);updCargaResumen();};
 function updCargaResumen(){
   var total=0,items=0;
   Object.values(cargaCants).forEach(function(v){if(v>0){total+=v;items++;}});
-  G('carga-resumen').textContent=items>0?items+' repuesto'+(items>1?'s':'')+' a cargar, '+total+' unidades en total':'No hay cantidades cargadas aun.';
+  G('carga-resumen').textContent=items>0?items+' repuesto'+(items>1?'s':'')+' a cargar, '+total+' unidades en total':'Sin cantidades cargadas.';
 }
-
 G('btn-carga-confirmar').onclick=function(){
   var items=Object.keys(cargaCants).filter(function(id){return cargaCants[id]>0;});
   if(!items.length){alert('No ingresaste ninguna cantidad.');return;}
@@ -835,66 +799,51 @@ G('btn-carga-confirmar').onclick=function(){
     var upd={};
     items.forEach(function(id){
       var p=productos[id];if(!p)return;
-      var newStock=p.stock+cargaCants[id];
-      upd['productos/'+id+'/stock']=newStock;
+      upd['productos/'+id+'/stock']=p.stock+cargaCants[id];
       var mid=uid();
       upd['movimientos/'+mid]={id:mid,pid:id,tipo:'entrada',cant:cargaCants[id],obs:'Carga inventario',ts:Date.now(),user:userName};
     });
     fbDb.ref().update(upd).then(function(){
-      var ok=G('carga-ok');ok.textContent='Carga registrada correctamente!';ok.style.display='block';
+      var ok=G('carga-ok');ok.textContent='Carga registrada!';ok.style.display='block';
       setTimeout(function(){ok.style.display='none';},3000);
       rCarga();
     }).catch(function(e){var er=G('carga-err');er.textContent='Error: '+e.message;er.style.display='block';});
   });
 };
 
-// ---- HISTORIAL ----
-function getHistFiltroTs(){
+// HISTORIAL
+function getHistRango(){
   var periodo=G('fhist-periodo').value;
   if(periodo==='custom'){
     var desde=G('fhist-desde').value?new Date(G('fhist-desde').value+'T00:00:00').getTime():0;
     var hasta=G('fhist-hasta').value?new Date(G('fhist-hasta').value+'T23:59:59').getTime():Date.now();
     return{desde:desde,hasta:hasta};
   }else if(periodo){
-    var dias=parseInt(periodo);
-    return{desde:Date.now()-dias*86400000,hasta:Date.now()};
+    return{desde:Date.now()-parseInt(periodo)*86400000,hasta:Date.now()};
   }
   return{desde:0,hasta:Date.now()*2};
 }
-
 function rHist(){
-  var filtro=G('fhist').value;
-  var catF=G('fhist-cat').value;
-  var rango=getHistFiltroTs();
+  var filtro=G('fhist').value,catF=G('fhist-cat').value,rango=getHistRango();
   var movs=mArr().sort(function(a,b){return b.ts-a.ts;});
   if(filtro)movs=movs.filter(function(m){return m.tipo===filtro;});
   if(catF)movs=movs.filter(function(m){var p=productos[m.pid];return p&&getCats(p).indexOf(catF)>=0;});
   movs=movs.filter(function(m){return m.ts>=rango.desde&&m.ts<=rango.hasta;});
 
-  var showStats=catF||G('fhist-periodo').value;
-  if(showStats&&movs.length>0){
-    var totalEnt=0,totalSal=0,totalMov=movs.length;
+  if((catF||G('fhist-periodo').value)&&movs.length>0){
+    var totalEnt=0,totalSal=0;
     movs.forEach(function(m){if(m.tipo==='entrada')totalEnt+=m.cant;else totalSal+=m.cant;});
     G('hist-stats-box').style.display='block';
-    G('hist-stats').innerHTML='<div class="hsc"><span class="hsl">Total movimientos</span><span class="hsv">'+totalMov+'</span></div><div class="hsc"><span class="hsl">Unidades ingresadas</span><span class="hsv" style="color:#1E6640">+'+totalEnt+'</span></div><div class="hsc"><span class="hsl">Unidades retiradas</span><span class="hsv" style="color:#7A2D5A">-'+totalSal+'</span></div>';
-
-    // Sumatoria por repuesto
+    G('hist-stats').innerHTML='<div class="hsc"><span class="hsl">Total movimientos</span><span class="hsv">'+movs.length+'</span></div><div class="hsc"><span class="hsl">Unidades ingresadas</span><span class="hsv" style="color:#1E6640">+'+totalEnt+'</span></div><div class="hsc"><span class="hsl">Unidades retiradas</span><span class="hsv" style="color:#7A2D5A">-'+totalSal+'</span></div>';
+    // Detalle por repuesto
     var porProd={};
-    movs.forEach(function(m){
-      if(!porProd[m.pid])porProd[m.pid]={ent:0,sal:0};
-      if(m.tipo==='entrada')porProd[m.pid].ent+=m.cant;
-      else porProd[m.pid].sal+=m.cant;
+    movs.forEach(function(m){if(!porProd[m.pid])porProd[m.pid]={ent:0,sal:0};if(m.tipo==='entrada')porProd[m.pid].ent+=m.cant;else porProd[m.pid].sal+=m.cant;});
+    var dRows='';
+    Object.keys(porProd).sort(function(a,b){return(porProd[b].sal+porProd[b].ent)-(porProd[a].sal+porProd[a].ent);}).forEach(function(pid){
+      var p=productos[pid];if(!p)return;var d=porProd[pid];
+      dRows+='<tr><td style="font-weight:700">'+p.cod+'</td><td>'+p.nom+'</td><td style="text-align:right;color:#1E6640">+'+(d.ent||0)+'</td><td style="text-align:right;color:#7A2D5A">-'+(d.sal||0)+'</td><td style="text-align:right;font-weight:700">'+(d.ent-d.sal>=0?'+':'')+(d.ent-d.sal)+'</td></tr>';
     });
-    var detRows='';
-    Object.keys(porProd).forEach(function(pid){
-      var p=productos[pid];if(!p)return;
-      var d=porProd[pid];
-      detRows+='<tr><td style="font-weight:700">'+p.cod+'</td><td>'+p.nom+'</td>';
-      detRows+='<td style="text-align:right;color:#1E6640">+'+(d.ent||0)+'</td>';
-      detRows+='<td style="text-align:right;color:#7A2D5A">-'+(d.sal||0)+'</td>';
-      detRows+='<td style="text-align:right;font-weight:700">'+(d.ent-d.sal>0?'+':'')+(d.ent-d.sal)+'</td></tr>';
-    });
-    G('hist-detalle').innerHTML=detRows?'<table><thead><tr><th>Codigo</th><th>Repuesto</th><th style="text-align:right">Ingresado</th><th style="text-align:right">Retirado</th><th style="text-align:right">Neto</th></tr></thead><tbody>'+detRows+'</tbody></table>':'';
+    G('hist-detalle').innerHTML=dRows?'<table><thead><tr><th>Codigo</th><th>Repuesto</th><th style="text-align:right">Ingresado</th><th style="text-align:right">Retirado</th><th style="text-align:right">Neto</th></tr></thead><tbody>'+dRows+'</tbody></table>':'';
   }else{G('hist-stats-box').style.display='none';}
 
   if(!movs.length){G('thist').innerHTML='<div class="empty">No hay movimientos en este periodo</div>';return;}
@@ -904,23 +853,25 @@ function rHist(){
     var cats=getCats(p).map(function(c){return'<span class="cat-tag">'+c+'</span>';}).join('');
     rows+='<tr><td>'+fmt(m.ts)+'</td><td style="font-weight:700">'+p.cod+'</td><td>'+p.nom+'</td><td>'+cats+'</td><td><span class="badge '+(m.tipo==='entrada'?'bent':'bsal')+'">'+(m.tipo==='entrada'?'Entrada':'Salida')+'</span></td><td style="text-align:right">'+(m.tipo==='salida'?'-':'+')+m.cant+'</td><td style="color:#7A6A9E">'+(m.user||'-')+'</td><td style="color:#7A6A9E">'+(m.obs||'-')+'</td></tr>';
   });
-  G('thist').innerHTML='<table><thead><tr><th>Fecha</th><th>Cod</th><th>Repuesto</th><th>Categorias</th><th>Tipo</th><th>Cant.</th><th>Usuario</th><th>Obs.</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  G('thist').innerHTML='<table><thead><tr><th>Fecha</th><th>Cod</th><th>Repuesto</th><th>Cats.</th><th>Tipo</th><th>Cant.</th><th>Usuario</th><th>Obs.</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 G('fhist').onchange=rHist;
 G('fhist-cat').onchange=rHist;
 G('fhist-periodo').onchange=function(){
-  var v=G('fhist-periodo').value;
-  G('fhist-custom').style.display=v==='custom'?'flex':'none';
-  if(v!=='custom')rHist();
+  G('fhist-custom').style.display=G('fhist-periodo').value==='custom'?'flex':'none';
+  if(G('fhist-periodo').value!=='custom')rHist();
 };
 G('btn-fhist-aplicar').onclick=rHist;
 
-// ---- QR ----
+// QR
 var qrSelected={};
 function updQRBar(){var n=Object.keys(qrSelected).length;G('selcnt').textContent=n;G('btn-psel').disabled=(n===0);}
 function rQR(){
-  qrSelected={};updQRBar();var grid=G('qgrid');grid.innerHTML='';var pa=pArr();
-  if(!pa.length){grid.innerHTML='<div class="empty">Agrega repuestos primero.</div>';return;}
+  qrSelected={};updQRBar();
+  var q=(G('qr-buscar').value||'').toLowerCase().trim();
+  var grid=G('qgrid');grid.innerHTML='';
+  var pa=pArr().filter(function(p){return matchSearch(p,q);});
+  if(!pa.length){grid.innerHTML='<div class="empty">No hay repuestos que coincidan.</div>';return;}
   pa.forEach(function(p){
     var card=document.createElement('div');card.className='qcard';card.dataset.id=p.id;
     var chk=document.createElement('div');chk.className='qchk';chk.textContent='v';card.appendChild(chk);
@@ -932,6 +883,7 @@ function rQR(){
     if(typeof QRCode!=='undefined'){try{new QRCode(qd,{text:p.cod,width:110,height:110,colorDark:'#2D1F5E',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
   });
 }
+G('qr-buscar').oninput=rQR;
 G('btn-selall').onclick=function(){document.querySelectorAll('.qcard').forEach(function(c){qrSelected[c.dataset.id]=true;c.classList.add('sel');});updQRBar();};
 G('btn-desel').onclick=function(){qrSelected={};document.querySelectorAll('.qcard').forEach(function(c){c.classList.remove('sel');});updQRBar();};
 function buildPrintHTML(ids){
@@ -943,12 +895,12 @@ function buildPrintHTML(ids){
   h+='setTimeout(function(){window.print();},800);}<\/script></body></html>';
   return h;
 }
-function openPrint(ids){var w=window.open('','_blank','width=700,height=600');if(!w){alert('Permiti las ventanas emergentes para imprimir.');return;}w.document.write(buildPrintHTML(ids));w.document.close();}
+function openPrint(ids){var w=window.open('','_blank','width=700,height=600');if(!w){alert('Permiti las ventanas emergentes.');return;}w.document.write(buildPrintHTML(ids));w.document.close();}
 G('btn-psel').onclick=function(){openPrint(qrSelected);};
 G('btn-pall').onclick=function(){openPrint(null);};
 
 var cfg=tryLoadCfg();
-if(cfg){initFB(cfg);}else{showLoad(false);showScreen('setup');}
+if(cfg)initFB(cfg);else{showLoad(false);showScreen('setup');}
 })();
 </script>
 </body>
