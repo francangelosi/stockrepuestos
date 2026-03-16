@@ -295,17 +295,48 @@ tr:hover td{background:#FAF7FF}
   <div class="pg" id="pg-hist">
     <div class="sh">
       <span class="stit">Historial</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="ib sm dan" id="btn-limpiar">Limpiar historial</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Tipo</div>
         <select id="fhist" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
           <option value="">Todos</option><option value="entrada">Entradas</option><option value="salida">Salidas</option>
         </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Categoria</div>
         <select id="fhist-cat" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:160px">
           <option value="">Todas las categorias</option>
         </select>
-        <button class="ib sm dan" id="btn-limpiar">Limpiar historial</button>
       </div>
+      <div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Periodo rapido</div>
+        <select id="fhist-periodo" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <option value="">Todos los tiempos</option>
+          <option value="7">Ultimos 7 dias</option>
+          <option value="30">Ultimos 30 dias</option>
+          <option value="90">Ultimos 90 dias</option>
+          <option value="custom">Rango personalizado</option>
+        </select>
+      </div>
+      <div id="fhist-custom" style="display:none;display:flex;gap:6px;align-items:flex-end">
+        <div>
+          <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Desde</div>
+          <input type="date" id="fhist-desde" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Hasta</div>
+          <input type="date" id="fhist-hasta" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+        </div>
+      </div>
+      <button class="ib pri sm" id="btn-fhist-aplicar">Aplicar</button>
     </div>
-    <div id="hist-stats-box" style="display:none"><div class="hist-stats" id="hist-stats"></div></div>
+    <div id="hist-stats-box" style="display:none">
+      <div class="hist-stats" id="hist-stats"></div>
+      <div style="font-size:14px;font-weight:700;color:#2D1F5E;margin:16px 0 8px">Detalle por repuesto</div>
+      <div id="hist-detalle"></div>
+    </div>
     <div id="thist"></div>
   </div>
 
@@ -550,6 +581,9 @@ function updateCatSelects(){
     sel.innerHTML='';
     var opt=document.createElement('option');opt.value='';opt.text=first;sel.appendChild(opt);
     cats.forEach(function(c){var o=document.createElement('option');o.value=c;o.text=c;sel.appendChild(o);});
+    if(sid==='carga-cat-sel'){
+      var osc=document.createElement('option');osc.value='__sin_categoria__';osc.text='Sin categoria';sel.appendChild(osc);
+    }
     sel.value=cur;
   });
 }
@@ -783,21 +817,55 @@ G('btn-carga-confirmar').onclick=function(){
 };
 
 // ---- HISTORIAL ----
+function getHistFiltroTs(){
+  var periodo=G('fhist-periodo').value;
+  if(periodo==='custom'){
+    var desde=G('fhist-desde').value?new Date(G('fhist-desde').value+'T00:00:00').getTime():0;
+    var hasta=G('fhist-hasta').value?new Date(G('fhist-hasta').value+'T23:59:59').getTime():Date.now();
+    return{desde:desde,hasta:hasta};
+  }else if(periodo){
+    var dias=parseInt(periodo);
+    return{desde:Date.now()-dias*86400000,hasta:Date.now()};
+  }
+  return{desde:0,hasta:Date.now()*2};
+}
+
 function rHist(){
   var filtro=G('fhist').value;
   var catF=G('fhist-cat').value;
+  var rango=getHistFiltroTs();
   var movs=mArr().sort(function(a,b){return b.ts-a.ts;});
   if(filtro)movs=movs.filter(function(m){return m.tipo===filtro;});
   if(catF)movs=movs.filter(function(m){var p=productos[m.pid];return p&&getCats(p).indexOf(catF)>=0;});
+  movs=movs.filter(function(m){return m.ts>=rango.desde&&m.ts<=rango.hasta;});
 
-  if(catF&&movs.length>0){
+  var showStats=catF||G('fhist-periodo').value;
+  if(showStats&&movs.length>0){
     var totalEnt=0,totalSal=0,totalMov=movs.length;
     movs.forEach(function(m){if(m.tipo==='entrada')totalEnt+=m.cant;else totalSal+=m.cant;});
     G('hist-stats-box').style.display='block';
     G('hist-stats').innerHTML='<div class="hsc"><span class="hsl">Total movimientos</span><span class="hsv">'+totalMov+'</span></div><div class="hsc"><span class="hsl">Unidades ingresadas</span><span class="hsv" style="color:#1E6640">+'+totalEnt+'</span></div><div class="hsc"><span class="hsl">Unidades retiradas</span><span class="hsv" style="color:#7A2D5A">-'+totalSal+'</span></div>';
+
+    // Sumatoria por repuesto
+    var porProd={};
+    movs.forEach(function(m){
+      if(!porProd[m.pid])porProd[m.pid]={ent:0,sal:0};
+      if(m.tipo==='entrada')porProd[m.pid].ent+=m.cant;
+      else porProd[m.pid].sal+=m.cant;
+    });
+    var detRows='';
+    Object.keys(porProd).forEach(function(pid){
+      var p=productos[pid];if(!p)return;
+      var d=porProd[pid];
+      detRows+='<tr><td style="font-weight:700">'+p.cod+'</td><td>'+p.nom+'</td>';
+      detRows+='<td style="text-align:right;color:#1E6640">+'+(d.ent||0)+'</td>';
+      detRows+='<td style="text-align:right;color:#7A2D5A">-'+(d.sal||0)+'</td>';
+      detRows+='<td style="text-align:right;font-weight:700">'+(d.ent-d.sal>0?'+':'')+(d.ent-d.sal)+'</td></tr>';
+    });
+    G('hist-detalle').innerHTML=detRows?'<table><thead><tr><th>Codigo</th><th>Repuesto</th><th style="text-align:right">Ingresado</th><th style="text-align:right">Retirado</th><th style="text-align:right">Neto</th></tr></thead><tbody>'+detRows+'</tbody></table>':'';
   }else{G('hist-stats-box').style.display='none';}
 
-  if(!movs.length){G('thist').innerHTML='<div class="empty">No hay movimientos</div>';return;}
+  if(!movs.length){G('thist').innerHTML='<div class="empty">No hay movimientos en este periodo</div>';return;}
   var rows='';
   movs.forEach(function(m){
     var p=productos[m.pid];if(!p)return;
@@ -808,6 +876,12 @@ function rHist(){
 }
 G('fhist').onchange=rHist;
 G('fhist-cat').onchange=rHist;
+G('fhist-periodo').onchange=function(){
+  var v=G('fhist-periodo').value;
+  G('fhist-custom').style.display=v==='custom'?'flex':'none';
+  if(v!=='custom')rHist();
+};
+G('btn-fhist-aplicar').onclick=rHist;
 
 // ---- QR ----
 var qrSelected={};
