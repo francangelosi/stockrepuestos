@@ -278,6 +278,7 @@ tr:hover td{background:#FAF7FF}
         <label class="mfl">Selecciona una categoria para cargar</label>
         <select id="carga-cat-sel" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%">
           <option value="">-- Selecciona categoria --</option>
+          <option value="__sin_categoria__">Sin categoria</option>
         </select>
       </div>
       <div id="carga-lista"></div>
@@ -730,7 +731,12 @@ function rCarga(){
   G('carga-lista').innerHTML='';
   G('carga-actions').style.display='none';
   if(!cat)return;
-  var lista=pArr().filter(function(p){return getCats(p).indexOf(cat)>=0;});
+  var lista;
+  if(cat==='__sin_categoria__'){
+    lista=pArr().filter(function(p){return getCats(p).length===0;});
+  }else{
+    lista=pArr().filter(function(p){return getCats(p).indexOf(cat)>=0;});
+  }
   if(!lista.length){G('carga-lista').innerHTML='<div class="empty">No hay repuestos en esta categoria.</div>';return;}
   lista.forEach(function(p){
     cargaCants[p.id]=0;
