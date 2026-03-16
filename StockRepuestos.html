@@ -255,6 +255,12 @@ tr:hover td{background:#FAF7FF}
       <div class="camwrap" id="camwrap"><video id="camvid" autoplay playsinline muted></video><div class="camovl"><div class="camfrm"></div></div></div>
       <div style="text-align:right;margin-bottom:8px;display:none" id="stopcam-wrap"><button class="ib sm" id="btn-stopcam">Cerrar camara</button></div>
       <div class="srbox" id="srbox"><span class="srn" id="srn"></span><span class="srs" id="srs"></span></div>
+      <div class="mfg">
+        <label class="mfl">Filtrar por categoria (opcional)</label>
+        <select id="mov-cat-filtro" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%">
+          <option value="">Todas las categorias</option>
+        </select>
+      </div>
       <div class="mfg"><label class="mfl">Repuesto</label><div class="acwrap" id="acwrap"><input type="text" class="acinp" id="acinp" placeholder="Escribi nombre o codigo..."><div class="aclist" id="aclist"></div></div></div>
       <span class="sinfo" id="sinfo"></span>
       <div class="mfg"><label class="mfl">Cantidad</label><input type="number" id="movcant" min="1" value="1"></div>
@@ -536,7 +542,7 @@ function updLimpiarPreview(){
 
 function updateCatSelects(){
   var cats=allCats();
-  ['filtro-cat-prod','carga-cat-sel','fhist-cat'].forEach(function(sid){
+  ['filtro-cat-prod','carga-cat-sel','fhist-cat','mov-cat-filtro'].forEach(function(sid){
     var sel=G(sid);if(!sel)return;
     var cur=sel.value;
     var first=sel.options[0].text;
@@ -653,7 +659,12 @@ function initAC(){
 function setHi(items){items.forEach(function(el,i){el.classList.toggle('hi',i===hiIdx);});if(items[hiIdx])items[hiIdx].scrollIntoView({block:'nearest'});}
 function renderAC(){
   var q=(acInp.value||'').toLowerCase().trim();hiIdx=-1;
-  var lista=pArr().filter(function(p){return!q||p.nom.toLowerCase().includes(q)||p.cod.toLowerCase().includes(q)||(getCats(p).join(' ')).toLowerCase().includes(q);}).slice(0,10);
+  var catF=G('mov-cat-filtro')?G('mov-cat-filtro').value:'';
+  var lista=pArr().filter(function(p){
+    var matchQ=!q||p.nom.toLowerCase().includes(q)||p.cod.toLowerCase().includes(q)||(getCats(p).join(' ')).toLowerCase().includes(q);
+    var matchC=!catF||getCats(p).indexOf(catF)>=0;
+    return matchQ&&matchC;
+  }).slice(0,10);
   if(!lista.length){acList.innerHTML='<span class="acmt">Sin resultados</span>';acList.classList.add('on');return;}
   acList.innerHTML='';
   lista.forEach(function(p){var el=document.createElement('div');el.className='acitem';el.innerHTML='<span class="accod">'+p.cod+'</span>'+p.nom+'<span class="acstk">Stock: '+p.stock+'</span>';el.onclick=function(){selProd(p.id);};acList.appendChild(el);});
@@ -669,7 +680,9 @@ function clearAC(){selectedPid=null;if(acInp){acInp.value='';acInp.classList.rem
 
 function rMovForm(){
   selectedPid=null;if(acInp){acInp.value='';acInp.classList.remove('sel');}if(acList)acList.classList.remove('on');
-  G('sinfo').textContent='';G('srbox').classList.remove('on');G('scan-inp').value='';initAC();
+  G('sinfo').textContent='';G('srbox').classList.remove('on');G('scan-inp').value='';
+  if(G('mov-cat-filtro'))G('mov-cat-filtro').onchange=function(){closeAC();if(acInp){acInp.value='';acInp.classList.remove('sel');}selectedPid=null;G('sinfo').textContent='';renderAC();};
+  initAC();
 }
 
 var scanInp=G('scan-inp');
