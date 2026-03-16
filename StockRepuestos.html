@@ -150,6 +150,16 @@ tr:hover td{background:#FAF7FF}
 .cat-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:12px;background:#F0EBF8;color:#7C5CBF;border:1px solid #D8CAF0;cursor:pointer}
 .cat-chip.sel{background:#9B7FD4;color:#fff;border-color:#9B7FD4}
 .cat-chip-x{font-size:14px;line-height:1}
+
+
+.prest-card{background:#fff;border:2px solid #D8CAF0;border-radius:10px;padding:14px;margin-bottom:10px}
+.prest-card.devuelto{border-color:#90D4AC;background:#EDFAF2}
+.prest-item{font-weight:700;font-size:14px;color:#2D1F5E}
+.prest-emp{font-size:13px;color:#7A6A9E;margin-top:3px}
+.prest-fecha{font-size:12px;color:#B0A0CC;margin-top:2px}
+.prest-actions{display:flex;gap:8px;margin-top:10px}
+.badge-prest{background:#FFF8E6;color:#7A5500;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-dev{background:#EDFAF2;color:#1E6640;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
 </style>
 </head>
 <body>
@@ -212,6 +222,7 @@ tr:hover td{background:#FAF7FF}
     <span class="nav-tab" id="t-carga">Carga</span>
     <span class="nav-tab" id="t-hist">Historial</span>
     <span class="nav-tab" id="t-qr">QR</span>
+    <span class="nav-tab" id="t-prest">Prestamos</span>
     <div class="nav-right">
       <span class="sdot" id="sdot"></span>
       <span class="uchip" id="uchip"></span>
@@ -355,6 +366,46 @@ tr:hover td{background:#FAF7FF}
       <button class="ib sm" id="btn-desel">Deseleccionar</button>
     </div>
     <div class="qgrid" id="qgrid"></div>
+  </div>
+  <div class="pg" id="pg-prest">
+    <div class="sh">
+      <span class="stit">Prestamos</span>
+      <button class="ib pri" id="btn-nuevo-prest">+ Nuevo prestamo</button>
+    </div>
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="qprest" placeholder="Buscar por item o empleado..." style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:260px">
+      <select id="fprest" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+        <option value="activo">Activos</option>
+        <option value="devuelto">Devueltos</option>
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div id="tprest"></div>
+  </div>
+</div>
+
+<div class="mbg" id="modal-prest">
+  <div class="modal">
+    <span class="mtit">Nuevo prestamo</span>
+    <div class="mfg">
+      <label class="mfl">Item del inventario (buscador)</label>
+      <div class="acwrap" id="prest-acwrap">
+        <input type="text" class="acinp" id="prest-acinp" placeholder="Escribi nombre o codigo del item...">
+        <div class="aclist" id="prest-aclist"></div>
+      </div>
+      <div id="prest-stock-info" style="font-size:12px;color:#7C5CBF;font-weight:700;margin-top:6px;display:none"></div>
+    </div>
+    <div class="mfg">
+      <label class="mfl">O escribi un item que no esta en el inventario</label>
+      <input type="text" id="prest-item-libre" placeholder="Ej: Taladro Bosch 18v...">
+    </div>
+    <div class="mfg"><label class="mfl">Nombre del empleado</label><input type="text" id="prest-empleado" placeholder="Ej: Juan Perez"></div>
+    <div class="mfg"><label class="mfl">Cantidad</label><input type="number" id="prest-cant" min="1" value="1"></div>
+    <div class="mfg"><label class="mfl">Observaciones (opcional)</label><textarea id="prest-obs" rows="2" style="resize:none"></textarea></div>
+    <div class="mact">
+      <button class="ib" id="btn-prest-cancel">Cancelar</button>
+      <button class="ib pri" id="btn-prest-save">Registrar prestamo</button>
+    </div>
   </div>
 </div>
 
@@ -522,6 +573,11 @@ function startApp(){
     if(pg){var id=pg.id;if(id==='pg-dash')rDash();if(id==='pg-prod')rProd();if(id==='pg-qr')rQR();if(id==='pg-carga')rCarga();}
     updateCatSelects();
   },function(){G('sdot').className='sdot off';});
+  fbDb.ref('prestamos').on('value',function(snap){
+    prestamos=snap.val()||{};
+    var pg=document.querySelector('.pg.on');
+    if(pg&&pg.id==='pg-prest')rPrest();
+  });
   fbDb.ref('movimientos').on('value',function(snap){
     movimientos=snap.val()||{};
     var pg=document.querySelector('.pg.on');
@@ -583,9 +639,9 @@ function goPage(name){
   G('pg-'+name).classList.add('on');G('t-'+name).classList.add('active');
   stopCam();
   if(name==='dash')rDash();if(name==='prod')rProd();if(name==='mov')rMovForm();
-  if(name==='carga')rCarga();if(name==='hist')rHist();if(name==='qr')rQR();
+  if(name==='carga')rCarga();if(name==='hist')rHist();if(name==='qr')rQR();if(name==='prest')rPrest();
 }
-['dash','prod','mov','carga','hist','qr'].forEach(function(n){G('t-'+n).onclick=function(){goPage(n);};});
+['dash','prod','mov','carga','hist','qr','prest'].forEach(function(n){G('t-'+n).onclick=function(){goPage(n);};});
 
 function rDash(){
   var pa=pArr(),ma=mArr();
@@ -612,7 +668,19 @@ function rProd(){
   lista.forEach(function(p){
     var cats=getCats(p).map(function(c){return'<span class="cat-tag">'+c+'</span>';}).join('');
     var sins=getSins(p).map(function(s){return'<span class="cat-tag" style="background:#E6F1FB;color:#185FA5">'+s+'</span>';}).join('');
-    rows+='<tr><td style="font-weight:700">'+p.cod+'</td><td>'+p.nom+(sins?'<br><span style="font-size:11px;color:#7A6A9E">Alias: </span>'+sins:'')+'</td><td>'+cats+'</td><td style="text-align:right">'+p.stock+'</td><td style="text-align:right;color:#7A6A9E">'+p.min+'</td><td>'+stBadge(p)+'</td><td style="white-space:nowrap"><button class="ib sm" onclick="_ep(\''+p.id+'\')">Editar</button> <button class="ib sm dan" onclick="_dp(\''+p.id+'\')">Borrar</button></td></tr>';
+        var prestActivos=prArr().filter(function(pr){return pr.estado==='activo'&&pr.pid===p.id;});
+    var prestCant=prestActivos.reduce(function(s,pr){return s+pr.cant;},0);
+    var prestTag=prestActivos.length>0?'<span class="badge" style="background:#FFF8E6;color:#7A5500;margin-left:4px">Prestado x'+prestCant+'</span>':'';
+    var sinHtml=sins?'<br><span style="font-size:11px;color:#7A6A9E">Alias: </span>'+sins:'';
+    rows+='<tr>';
+    rows+='<td style="font-weight:700">'+p.cod+'</td>';
+    rows+='<td>'+p.nom+prestTag+sinHtml+'</td>';
+    rows+='<td>'+cats+'</td>';
+    rows+='<td style="text-align:right">'+p.stock+'</td>';
+    rows+='<td style="text-align:right;color:#7A6A9E">'+p.min+'</td>';
+    rows+='<td>'+stBadge(p)+'</td>';
+    rows+='<td style="white-space:nowrap"><button class="ib sm" onclick="_ep(\''+p.id+'\')">Editar</button> <button class="ib sm dan" onclick="_dp(\''+p.id+'\')">Borrar</button></td>';
+    rows+='</tr>'
   });
   G('tprod').innerHTML='<table><thead><tr><th>Codigo</th><th>Nombre</th><th>Categorias</th><th>Stock</th><th>Min.</th><th>Estado</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
@@ -899,6 +967,151 @@ function openPrint(ids){var w=window.open('','_blank','width=700,height=600');if
 G('btn-psel').onclick=function(){openPrint(qrSelected);};
 G('btn-pall').onclick=function(){openPrint(null);};
 
+
+// ---- PRESTAMOS ----
+var prestamos={};
+var prestAcInp,prestAcList,prestHiIdx=-1,prestSelPid=null;
+
+function prArr(){return Object.values(prestamos);}
+
+function fmtFecha(ts){var d=new Date(ts);return('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
+
+function initPrestAC(){
+  prestAcInp=G('prest-acinp');
+  prestAcList=G('prest-aclist');
+  prestHiIdx=-1;
+  prestSelPid=null;
+  if(!prestAcInp)return;
+  prestAcInp.oninput=function(){
+    prestSelPid=null;
+    G('prest-stock-info').style.display='none';
+    renderPrestAC();
+  };
+  prestAcInp.onfocus=function(){renderPrestAC();};
+  prestAcInp.onkeydown=function(e){
+    var items=prestAcList.querySelectorAll('.acitem');
+    if(e.key==='ArrowDown'){e.preventDefault();prestHiIdx=Math.min(prestHiIdx+1,items.length-1);setPrestHi(items);}
+    else if(e.key==='ArrowUp'){e.preventDefault();prestHiIdx=Math.max(prestHiIdx-1,0);setPrestHi(items);}
+    else if(e.key==='Enter'){e.preventDefault();if(prestHiIdx>=0&&items[prestHiIdx])items[prestHiIdx].click();}
+    else if(e.key==='Escape')closePrestAC();
+  };
+  document.addEventListener('click',function(e){
+    var w=G('prest-acwrap');
+    if(w&&!w.contains(e.target))closePrestAC();
+  });
+}
+
+function setPrestHi(items){
+  items.forEach(function(el,i){el.classList.toggle('hi',i===prestHiIdx);});
+  if(items[prestHiIdx])items[prestHiIdx].scrollIntoView({block:'nearest'});
+}
+
+function renderPrestAC(){
+  if(!prestAcInp||!prestAcList)return;
+  var q=(prestAcInp.value||'').toLowerCase().trim();
+  prestHiIdx=-1;
+  var lista=pArr().filter(function(p){return matchSearch(p,q);}).slice(0,10);
+  if(!lista.length){
+    prestAcList.innerHTML='<span class="acmt">Sin resultados en inventario</span>';
+    prestAcList.classList.add('on');
+    return;
+  }
+  prestAcList.innerHTML='';
+  lista.forEach(function(p){
+    var el=document.createElement('div');
+    el.className='acitem';
+    el.innerHTML='<span class="accod">'+p.cod+'</span>'+p.nom+'<span class="acstk">Stock: '+p.stock+'</span>';
+    el.onclick=function(){
+      prestSelPid=p.id;
+      prestAcInp.value='['+p.cod+'] '+p.nom;
+      prestAcInp.classList.add('sel');
+      closePrestAC();
+      G('prest-item-libre').value='';
+      G('prest-stock-info').style.display='block';
+      G('prest-stock-info').textContent='Stock disponible: '+p.stock+' unidades';
+    };
+    prestAcList.appendChild(el);
+  });
+  prestAcList.classList.add('on');
+}
+
+function closePrestAC(){
+  if(prestAcList)prestAcList.classList.remove('on');
+  prestHiIdx=-1;
+}
+
+G('btn-nuevo-prest').onclick=function(){
+  prestSelPid=null;
+  if(prestAcInp){prestAcInp.value='';prestAcInp.classList.remove('sel');}
+  G('prest-item-libre').value='';G('prest-empleado').value='';
+  G('prest-cant').value=1;G('prest-obs').value='';
+  G('prest-stock-info').style.display='none';
+  G('modal-prest').classList.add('on');
+  initPrestAC();
+};
+G('btn-prest-cancel').onclick=function(){G('modal-prest').classList.remove('on');};
+G('prest-acinp').oninput=function(){if(G('prest-acinp').value===''){prestSelPid=null;G('prest-stock-info').style.display='none';}};
+
+G('btn-prest-save').onclick=function(){
+  var empleado=G('prest-empleado').value.trim();
+  var cant=parseInt(G('prest-cant').value)||1;
+  var obs=G('prest-obs').value.trim();
+  var itemLibre=G('prest-item-libre').value.trim();
+  if(!empleado){alert('Ingresa el nombre del empleado');return;}
+  if(!prestSelPid&&!itemLibre){alert('Selecciona un item del inventario o escribe uno manualmente');return;}
+  var itemNom=itemLibre||(prestSelPid?('['+productos[prestSelPid].cod+'] '+productos[prestSelPid].nom):'');
+  askPin(function(){
+    var pid=uid();
+    var data={id:pid,pid:prestSelPid||null,itemNom:itemNom,empleado:empleado,cant:cant,obs:obs,fechaPrestamo:Date.now(),estado:'activo',user:currentUser.displayName||currentUser.email.split('@')[0]};
+    fbDb.ref('prestamos/'+pid).set(data).then(function(){
+      G('modal-prest').classList.remove('on');
+      rPrest();rProd();
+    });
+  });
+};
+
+function rPrest(){
+  var q=(G('qprest').value||'').toLowerCase();
+  var filtro=G('fprest').value;
+  var lista=prArr().sort(function(a,b){return b.fechaPrestamo-a.fechaPrestamo;});
+  if(filtro)lista=lista.filter(function(p){return p.estado===filtro;});
+  if(q)lista=lista.filter(function(p){return p.itemNom.toLowerCase().includes(q)||p.empleado.toLowerCase().includes(q);});
+  if(!lista.length){G('tprest').innerHTML='<div class="empty">No hay prestamos que coincidan.</div>';return;}
+  var html='';
+  lista.forEach(function(pr){
+    var esActivo=pr.estado==='activo';
+    var cardClass=esActivo?'prest-card':'prest-card devuelto';
+    html+='<div class="'+cardClass+'">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">';
+    html+='<div>';
+    html+='<div class="prest-item">'+pr.itemNom+(pr.cant>1?' (x'+pr.cant+')':'')+'</div>';
+    html+='<div class="prest-emp">Empleado: '+pr.empleado+'</div>';
+    html+='<div class="prest-fecha">Prestado el: '+fmtFecha(pr.fechaPrestamo)+(pr.fechaDevolucion?' | Devuelto el: '+fmtFecha(pr.fechaDevolucion):'')+'</div>';
+    if(pr.obs)html+='<div class="prest-fecha">Obs: '+pr.obs+'</div>';
+    html+='</div>';
+    html+='<span class="'+(esActivo?'badge-prest':'badge-dev')+'">'+(esActivo?'Prestado':'Devuelto')+'</span>';
+    html+='</div>';
+    if(esActivo){
+      html+='<div class="prest-actions">';
+      html+='<button class="ib sm grn" onclick="devolverPrest(\''+pr.id+'\')">Marcar como devuelto</button>';
+      html+='<button class="ib sm dan" onclick="eliminarPrest(\''+pr.id+'\')">Eliminar</button>';
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  G('tprest').innerHTML=html;
+}
+G('qprest').oninput=rPrest;
+G('fprest').onchange=rPrest;
+
+window.devolverPrest=function(id){
+  if(!confirm('Marcar como devuelto?'))return;
+  fbDb.ref('prestamos/'+id).update({estado:'devuelto',fechaDevolucion:Date.now()}).then(function(){rPrest();rProd();});
+};
+window.eliminarPrest=function(id){
+  if(!confirm('Eliminar este prestamo?'))return;
+  fbDb.ref('prestamos/'+id).remove().then(function(){rPrest();});
+};
 var cfg=tryLoadCfg();
 if(cfg)initFB(cfg);else{showLoad(false);showScreen('setup');}
 })();
