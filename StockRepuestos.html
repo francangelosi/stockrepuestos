@@ -390,6 +390,95 @@ function startApp(){
     if(pg){var id=pg.id;if(id==='pg-dash')rDash();if(id==='pg-hist')rHist();}
   });
   goPage('dash');
+
+// ---- Limpiar historial ----
+if($id('btn-limpiar'))$id('btn-limpiar').onclick=function(){
+  if(!mArr().length){alert('No hay movimientos para borrar.');return;}
+  // Set default date to today
+  var hoy=new Date();
+  var yyyy=hoy.getFullYear();
+  var mm=('0'+(hoy.getMonth()+1)).slice(-2);
+  var dd=('0'+hoy.getDate()).slice(-2);
+  $id('limpiar-fecha').value=yyyy+'-'+mm+'-'+dd;
+  actualizarPreview();
+  $id('modal-limpiar').classList.add('on');
+};
+if($id('limpiar-fecha'))$id('limpiar-fecha').oninput=actualizarPreview;
+function actualizarPreview(){
+  var fecha=$id('limpiar-fecha').value;
+  var prev=$id('limpiar-preview');
+  if(!fecha){prev.style.display='none';$id('btn-limpiar-confirm').disabled=true;return;}
+  var limite=new Date(fecha+'T23:59:59').getTime();
+  var count=mArr().filter(function(m){return m.ts<=limite;}).length;
+  if(count===0){
+    prev.style.display='block';
+    prev.textContent='No hay movimientos anteriores a esa fecha.';
+    $id('btn-limpiar-confirm').disabled=true;
+  } else {
+    prev.style.display='block';
+    prev.textContent='Se van a borrar '+count+' movimiento'+(count>1?'s':'')+' anteriores al '+fecha+'.';
+    $id('btn-limpiar-confirm').disabled=false;
+  }
+}
+if($id('btn-limpiar-cancel'))$id('btn-limpiar-cancel').onclick=function(){$id('modal-limpiar').classList.remove('on');};
+if($id('btn-limpiar-confirm'))$id('btn-limpiar-confirm').onclick=function(){
+  var fecha=$id('limpiar-fecha').value;
+  if(!fecha)return;
+  var limite=new Date(fecha+'T23:59:59').getTime();
+  var aEliminar=mArr().filter(function(m){return m.ts<=limite;});
+  if(!aEliminar.length)return;
+  if(!confirm('Vas a borrar '+aEliminar.length+' movimiento'+(aEliminar.length>1?'s':'')+' permanentemente. ¿Confirmas?'))return;
+  var updates={};
+  aEliminar.forEach(function(m){updates['movimientos/'+m.id]=null;});
+  fbDb.ref().update(updates).then(function(){
+    $id('modal-limpiar').classList.remove('on');
+    rHist();
+    alert('Historial limpiado correctamente.');
+  }).catch(function(e){alert('Error al borrar: '+e.message);});
+};
+
+var qrSelected={};
+function updQRBar(){var n=Object.keys(qrSelected).length;$id('selcnt').textContent=n;$id('btn-psel').disabled=(n===0);}
+function rQR(){
+  qrSelected={};updQRBar();
+  var grid=$id('qgrid');grid.innerHTML='';
+  var pa=pArr();
+  if(!pa.length){grid.innerHTML='<div class="empty">Agregá repuestos primero.</div>';return;}
+  pa.forEach(function(p){
+    var card=document.createElement('div');card.className='qcard';card.dataset.id=p.id;
+    var chk=document.createElement('div');chk.className='qchk';chk.textContent='checkmark';card.appendChild(chk);
+    chk.textContent='✓';
+    var qd=document.createElement('div');qd.style.cssText='margin:0 auto';card.appendChild(qd);
+    var inf=document.createElement('div');inf.innerHTML='<span class="qcod">'+p.cod+'</span><span class="qnom">'+p.nom+'</span><span class="qstk">Stock: '+p.stock+'</span>';
+    card.appendChild(inf);
+    card.onclick=function(){if(qrSelected[p.id]){delete qrSelected[p.id];card.classList.remove('sel');}else{qrSelected[p.id]=true;card.classList.add('sel');}updQRBar();};
+    grid.appendChild(card);
+    if(typeof QRCode!=='undefined'){try{new QRCode(qd,{text:p.cod,width:110,height:110,colorDark:'#2D1F5E',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
+  });
+}
+$id('btn-selall').onclick=function(){document.querySelectorAll('.qcard').forEach(function(c){qrSelected[c.dataset.id]=true;c.classList.add('sel');});updQRBar();};
+$id('btn-desel').onclick=function(){qrSelected={};document.querySelectorAll('.qcard').forEach(function(c){c.classList.remove('sel');});updQRBar();};
+function buildPrintHTML(ids){
+  var items=ids?pArr().filter(function(p){return ids[p.id];}):pArr();
+  var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>QR</title><style>*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}body{background:#fff;padding:16px}.grid{display:flex;flex-wrap:wrap;gap:12px}.card{border:1.5px solid #D8CAF0;border-radius:10px;padding:12px;text-align:center;width:160px;page-break-inside:avoid}.cod{font-weight:700;font-size:13px;color:#2D1F5E;margin-top:6px;display:block}.nom{font-size:11px;color:#7A6A9E;margin-top:2px;display:block}canvas,img{display:block;margin:0 auto}@media print{body{padding:4px}}</style></head><body><div class="grid">';
+  items.forEach(function(p){h+='<div class="card"><div id="q'+p.id+'"></div><span class="cod">'+p.cod+'</span><span class="nom">'+p.nom+'</span></div>';});
+  h+='</div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>window.onload=function(){';
+  items.forEach(function(p){h+='new QRCode(document.getElementById("q'+p.id+'"),{text:"'+p.cod+'",width:110,height:110,colorDark:"#2D1F5E",colorLight:"#FFFFFF"});';});
+  h+='setTimeout(function(){window.print();},800);}<\/script></body></html>';
+  return h;
+}
+function openPrint(ids){var w=window.open('','_blank','width=700,height=600');if(!w){alert('Permití las ventanas emergentes para imprimir.');return;}w.document.write(buildPrintHTML(ids));w.document.close();}
+$id('btn-psel').onclick=function(){openPrint(qrSelected);};
+$id('btn-pall').onclick=function(){openPrint(null);};
+
+// BOOT
+var cfg=tryLoadCfg();
+if(cfg){initFB(cfg);}
+else{showLoad(false);showScreen('setup');}
+})();
+</script>
+</body>
+</html>
 }
 
 function goPage(name){
@@ -539,91 +628,4 @@ function rHist(){
 }
 $id('fhist').onchange=rHist;
 
-// ---- Limpiar historial ----
-if($id('btn-limpiar'))$id('btn-limpiar').onclick=function(){
-  if(!mArr().length){alert('No hay movimientos para borrar.');return;}
-  // Set default date to today
-  var hoy=new Date();
-  var yyyy=hoy.getFullYear();
-  var mm=('0'+(hoy.getMonth()+1)).slice(-2);
-  var dd=('0'+hoy.getDate()).slice(-2);
-  $id('limpiar-fecha').value=yyyy+'-'+mm+'-'+dd;
-  actualizarPreview();
-  $id('modal-limpiar').classList.add('on');
-};
-if($id('limpiar-fecha'))$id('limpiar-fecha').oninput=actualizarPreview;
-function actualizarPreview(){
-  var fecha=$id('limpiar-fecha').value;
-  var prev=$id('limpiar-preview');
-  if(!fecha){prev.style.display='none';$id('btn-limpiar-confirm').disabled=true;return;}
-  var limite=new Date(fecha+'T23:59:59').getTime();
-  var count=mArr().filter(function(m){return m.ts<=limite;}).length;
-  if(count===0){
-    prev.style.display='block';
-    prev.textContent='No hay movimientos anteriores a esa fecha.';
-    $id('btn-limpiar-confirm').disabled=true;
-  } else {
-    prev.style.display='block';
-    prev.textContent='Se van a borrar '+count+' movimiento'+(count>1?'s':'')+' anteriores al '+fecha+'.';
-    $id('btn-limpiar-confirm').disabled=false;
-  }
-}
-if($id('btn-limpiar-cancel'))$id('btn-limpiar-cancel').onclick=function(){$id('modal-limpiar').classList.remove('on');};
-if($id('btn-limpiar-confirm'))$id('btn-limpiar-confirm').onclick=function(){
-  var fecha=$id('limpiar-fecha').value;
-  if(!fecha)return;
-  var limite=new Date(fecha+'T23:59:59').getTime();
-  var aEliminar=mArr().filter(function(m){return m.ts<=limite;});
-  if(!aEliminar.length)return;
-  if(!confirm('Vas a borrar '+aEliminar.length+' movimiento'+(aEliminar.length>1?'s':'')+' permanentemente. ¿Confirmas?'))return;
-  var updates={};
-  aEliminar.forEach(function(m){updates['movimientos/'+m.id]=null;});
-  fbDb.ref().update(updates).then(function(){
-    $id('modal-limpiar').classList.remove('on');
-    rHist();
-    alert('Historial limpiado correctamente.');
-  }).catch(function(e){alert('Error al borrar: '+e.message);});
-};
 
-var qrSelected={};
-function updQRBar(){var n=Object.keys(qrSelected).length;$id('selcnt').textContent=n;$id('btn-psel').disabled=(n===0);}
-function rQR(){
-  qrSelected={};updQRBar();
-  var grid=$id('qgrid');grid.innerHTML='';
-  var pa=pArr();
-  if(!pa.length){grid.innerHTML='<div class="empty">Agregá repuestos primero.</div>';return;}
-  pa.forEach(function(p){
-    var card=document.createElement('div');card.className='qcard';card.dataset.id=p.id;
-    var chk=document.createElement('div');chk.className='qchk';chk.textContent='checkmark';card.appendChild(chk);
-    chk.textContent='✓';
-    var qd=document.createElement('div');qd.style.cssText='margin:0 auto';card.appendChild(qd);
-    var inf=document.createElement('div');inf.innerHTML='<span class="qcod">'+p.cod+'</span><span class="qnom">'+p.nom+'</span><span class="qstk">Stock: '+p.stock+'</span>';
-    card.appendChild(inf);
-    card.onclick=function(){if(qrSelected[p.id]){delete qrSelected[p.id];card.classList.remove('sel');}else{qrSelected[p.id]=true;card.classList.add('sel');}updQRBar();};
-    grid.appendChild(card);
-    if(typeof QRCode!=='undefined'){try{new QRCode(qd,{text:p.cod,width:110,height:110,colorDark:'#2D1F5E',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});}catch(e){}}
-  });
-}
-$id('btn-selall').onclick=function(){document.querySelectorAll('.qcard').forEach(function(c){qrSelected[c.dataset.id]=true;c.classList.add('sel');});updQRBar();};
-$id('btn-desel').onclick=function(){qrSelected={};document.querySelectorAll('.qcard').forEach(function(c){c.classList.remove('sel');});updQRBar();};
-function buildPrintHTML(ids){
-  var items=ids?pArr().filter(function(p){return ids[p.id];}):pArr();
-  var h='<!DOCTYPE html><html><head><meta charset="utf-8"><title>QR</title><style>*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}body{background:#fff;padding:16px}.grid{display:flex;flex-wrap:wrap;gap:12px}.card{border:1.5px solid #D8CAF0;border-radius:10px;padding:12px;text-align:center;width:160px;page-break-inside:avoid}.cod{font-weight:700;font-size:13px;color:#2D1F5E;margin-top:6px;display:block}.nom{font-size:11px;color:#7A6A9E;margin-top:2px;display:block}canvas,img{display:block;margin:0 auto}@media print{body{padding:4px}}</style></head><body><div class="grid">';
-  items.forEach(function(p){h+='<div class="card"><div id="q'+p.id+'"></div><span class="cod">'+p.cod+'</span><span class="nom">'+p.nom+'</span></div>';});
-  h+='</div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>window.onload=function(){';
-  items.forEach(function(p){h+='new QRCode(document.getElementById("q'+p.id+'"),{text:"'+p.cod+'",width:110,height:110,colorDark:"#2D1F5E",colorLight:"#FFFFFF"});';});
-  h+='setTimeout(function(){window.print();},800);}<\/script></body></html>';
-  return h;
-}
-function openPrint(ids){var w=window.open('','_blank','width=700,height=600');if(!w){alert('Permití las ventanas emergentes para imprimir.');return;}w.document.write(buildPrintHTML(ids));w.document.close();}
-$id('btn-psel').onclick=function(){openPrint(qrSelected);};
-$id('btn-pall').onclick=function(){openPrint(null);};
-
-// BOOT
-var cfg=tryLoadCfg();
-if(cfg){initFB(cfg);}
-else{showLoad(false);showScreen('setup');}
-})();
-</script>
-</body>
-</html>
