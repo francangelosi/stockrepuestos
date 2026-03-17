@@ -370,7 +370,10 @@ tr:hover td{background:#FAF7FF}
   <div class="pg" id="pg-prest">
     <div class="sh">
       <span class="stit">Prestamos</span>
-      <button class="ib pri" id="btn-nuevo-prest">+ Nuevo prestamo</button>
+      <div style="display:flex;gap:8px">
+        <button class="ib dan sm" id="btn-limpiar-prest">Limpiar devueltos</button>
+        <button class="ib pri" id="btn-nuevo-prest">+ Nuevo prestamo</button>
+      </div>
     </div>
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <input type="text" id="qprest" placeholder="Buscar por item o empleado..." style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:260px">
@@ -592,6 +595,15 @@ function startApp(){
   };
   G('limpiar-fecha').oninput=updLimpiarPreview;
   G('btn-limpiar-cancel').onclick=function(){G('modal-limpiar').classList.remove('on');};
+  G('btn-limpiar-prest').onclick=function(){
+    var devueltos=prArr().filter(function(p){return p.estado==='devuelto';});
+    if(!devueltos.length){alert('No hay prestamos devueltos para borrar.');return;}
+    if(!confirm('Borrar '+devueltos.length+' prestamo'+(devueltos.length>1?'s':'')+' devuelto'+(devueltos.length>1?'s':'')+' del historial?'))return;
+    var upd={};
+    devueltos.forEach(function(p){upd['prestamos/'+p.id]=null;});
+    fbDb.ref().update(upd).then(function(){rPrest();alert('Historial de prestamos limpiado.');}).catch(function(e){alert('Error: '+e.message);});
+  };
+
   G('btn-limpiar-confirm').onclick=function(){
     var fecha=G('limpiar-fecha').value;if(!fecha)return;
     var limite=new Date(fecha+'T23:59:59').getTime();
