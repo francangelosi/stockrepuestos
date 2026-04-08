@@ -3,8 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StockRepuestos</title>
-<meta name="theme-color" content="#9B7FD4">
+<title>StockRepuestos | Granja San Miguel</title>
+<meta name="theme-color" content="#2E7D32">
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" id="apple-icon">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="StockGSM">
+<script>
+// Inyectar manifest y apple icon dinámicamente
+(function(){
+  var pngUri="data:image/png;base64,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";
+  // Apple touch icon (PNG embebido)
+  var appleEl=document.getElementById("apple-icon");
+  if(appleEl){appleEl.href=pngUri;appleEl.type="image/png";}
+  // Favicon PNG
+  var fav=document.createElement("link");
+  fav.rel="icon";fav.type="image/png";fav.href=pngUri;
+  document.head.appendChild(fav);
+  // Manifest con PNG embebido
+  var manifest={
+    "name":"StockRepuestos - Granja San Miguel",
+    "short_name":"Stock GSM",
+    "description":"Gestion de inventario - Granja San Miguel Bahia Blanca",
+    "start_url":"./","display":"standalone",
+    "background_color":"#F1F8E9","theme_color":"#2E7D32",
+    "icons":[
+      {"src":pngUri,"sizes":"192x192","type":"image/png","purpose":"any maskable"},
+      {"src":pngUri,"sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    ]
+  };
+  var blob=new Blob([JSON.stringify(manifest)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var manEl=document.getElementById("pwa-manifest");
+  if(manEl)manEl.href=url;
+})();
+</script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -160,31 +194,17 @@ tr:hover td{background:#FAF7FF}
 .prest-actions{display:flex;gap:8px;margin-top:10px}
 .badge-prest{background:#FFF8E6;color:#7A5500;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
 .badge-dev{background:#EDFAF2;color:#1E6640;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+
+.prov-card{background:#fff;border:2px solid #D8CAF0;border-radius:10px;padding:14px;margin-bottom:10px}
+.prov-nom{font-weight:700;font-size:14px;color:#2D1F5E}
+.prov-dato{font-size:12px;color:#7A6A9E;margin-top:4px}
+.prov-actions{display:flex;gap:8px;margin-top:10px}
+.prov-tag{display:inline-block;padding:2px 7px;border-radius:99px;font-size:11px;background:#FEF0E6;color:#9A5200;margin:1px}
 </style>
 </head>
 <body>
 <div class="loading" id="loading"><div class="spinner"></div><span>Conectando...</span></div>
 
-<div class="screen" id="screen-setup">
-  <div class="center-wrap"><div class="card-box">
-    <div class="logo">StockRepuestos</div>
-    <div class="logo-sub">Configuracion inicial</div>
-    <div class="info-box">
-      <strong>Seguí estos pasos:</strong>
-      <ol>
-        <li>Abrí <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a></li>
-        <li>Bases de datos - Realtime Database - Crear - Modo prueba - Habilitar</li>
-        <li>Seguridad - Authentication - Comenzar - Correo/contrasena - Habilitar - Guardar</li>
-        <li>Configuracion del proyecto - General - Agregar app - Web - Registrar - copiar firebaseConfig</li>
-      </ol>
-    </div>
-    <div class="fg"><label class="fl">Pega el firebaseConfig completo</label>
-      <textarea id="setup-cfg" rows="7" placeholder="const firebaseConfig = { apiKey: ..., databaseURL: ... };"></textarea>
-    </div>
-    <button class="btn pri" id="btn-setup">Guardar y continuar</button>
-    <div class="err" id="err-setup"></div>
-  </div></div>
-</div>
 
 <div class="screen" id="screen-login">
   <div class="center-wrap"><div class="card-box">
@@ -215,7 +235,7 @@ tr:hover td{background:#FAF7FF}
 
 <div id="main-app">
   <div class="nav">
-    <span class="nav-brand">StockRepuestos</span>
+    <span class="nav-brand">🥚 StockRepuestos</span>
     <span class="nav-tab active" id="t-dash">Dashboard</span>
     <span class="nav-tab" id="t-prod">Productos</span>
     <span class="nav-tab" id="t-mov">Retiros</span>
@@ -223,6 +243,7 @@ tr:hover td{background:#FAF7FF}
     <span class="nav-tab" id="t-hist">Historial</span>
     <span class="nav-tab" id="t-qr">QR</span>
     <span class="nav-tab" id="t-prest">Prestamos</span>
+    <span class="nav-tab" id="t-prov">Proveedores</span>
     <div class="nav-right">
       <span class="sdot" id="sdot"></span>
       <span class="uchip" id="uchip"></span>
@@ -385,6 +406,18 @@ tr:hover td{background:#FAF7FF}
     </div>
     <div id="tprest"></div>
   </div>
+
+  <div class="pg" id="pg-prov">
+    <div class="sh">
+      <span class="stit">Proveedores</span>
+      <button class="ib pri" id="btn-nuevo-prov">+ Nuevo proveedor</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <input type="text" id="qprov" placeholder="Buscar por nombre, telefono, direccion..." style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:100%;max-width:360px">
+    </div>
+    <div id="tprov"></div>
+  </div>
+
 </div>
 
 <div class="mbg" id="modal-prest">
@@ -427,17 +460,62 @@ tr:hover td{background:#FAF7FF}
     </div>
     <div class="mfg">
       <label class="mfl">Categorias</label>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input type="text" id="fcat-input" placeholder="Escribe una categoria..." style="flex:1">
+      <div style="display:flex;gap:8px;margin-bottom:8px;position:relative">
+        <div style="flex:1;position:relative">
+          <input type="text" id="fcat-input" placeholder="Escribi o elegí una categoria..." autocomplete="off">
+          <div id="fcat-aclist" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #9B7FD4;border-radius:8px;margin-top:3px;z-index:2000;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(100,70,200,.12)"></div>
+        </div>
         <button class="ib sm pri" id="btn-fcat-add" style="white-space:nowrap">Agregar</button>
       </div>
       <div id="fcat-chips" class="cat-chips"></div>
+    </div>
+    <div class="mfg">
+      <label class="mfl">Proveedores</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <select id="fprov-sel" style="flex:1;min-width:120px;padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <option value="">-- Seleccionar proveedor --</option>
+        </select>
+        <button class="ib sm pri" id="btn-fprov-add" style="white-space:nowrap">Agregar</button>
+        <button class="ib sm" id="btn-fprov-nuevo" style="white-space:nowrap">+ Nuevo</button>
+      </div>
+      <div id="fprov-chips" class="cat-chips"></div>
     </div>
     <div class="frow">
       <div class="mfg"><label class="mfl">Stock inicial</label><input type="number" id="fstk" min="0" value="0"></div>
       <div class="mfg"><label class="mfl">Stock minimo</label><input type="number" id="fmin" min="0" value="2"></div>
     </div>
     <div class="mact"><button class="ib" id="btn-cancel">Cancelar</button><button class="ib pri" id="btn-save">Guardar</button></div>
+  </div>
+</div>
+
+<!-- Mini-modal: Nuevo proveedor desde modal de producto -->
+<div class="mbg" id="modal-prov-quick">
+  <div class="modal" style="max-width:380px">
+    <span class="mtit">Nuevo proveedor</span>
+    <div class="mfg"><label class="mfl">Nombre *</label><input type="text" id="qprov-nom" placeholder="Nombre del proveedor"></div>
+    <div class="mfg"><label class="mfl">Telefono</label><input type="text" id="qprov-tel" placeholder="Ej: 291-4312837"></div>
+    <div class="mfg"><label class="mfl">Email</label><input type="email" id="qprov-email" placeholder="contacto@proveedor.com"></div>
+    <div class="mfg"><label class="mfl">Direccion</label><input type="text" id="qprov-dir" placeholder="Direccion (opcional)"></div>
+    <div class="mact">
+      <button class="ib" id="btn-qprov-cancel">Cancelar</button>
+      <button class="ib pri" id="btn-qprov-save">Guardar y agregar</button>
+    </div>
+    <div id="qprov-err" style="color:#8B2E2E;font-size:13px;margin-top:8px;display:none"></div>
+  </div>
+</div>
+
+<div class="mbg" id="modal-prov">
+  <div class="modal">
+    <span class="mtit" id="mprov-tit">Nuevo proveedor</span>
+    <div class="mfg"><label class="mfl">Nombre *</label><input type="text" id="prov-nom" placeholder="Ej: Distribuidora Lopez"></div>
+    <div class="mfg"><label class="mfl">Telefono</label><input type="text" id="prov-tel" placeholder="Ej: 011-4321-1234"></div>
+    <div class="mfg"><label class="mfl">Email</label><input type="email" id="prov-email" placeholder="contacto@proveedor.com"></div>
+    <div class="mfg"><label class="mfl">Direccion</label><input type="text" id="prov-dir" placeholder="Ej: Av. Corrientes 1234, CABA"></div>
+    <div class="mfg"><label class="mfl">Notas</label><textarea id="prov-notas" rows="2" style="resize:none" placeholder="Horarios, condiciones, etc."></textarea></div>
+    <div class="mact">
+      <button class="ib" id="btn-prov-cancel">Cancelar</button>
+      <button class="ib pri" id="btn-prov-save">Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -475,17 +553,18 @@ tr:hover td{background:#FAF7FF}
 <script>
 (function(){
 var fbAuth=null,fbDb=null,currentUser=null;
+var proveedores={};
 var productos={},movimientos={};
 var editId=null,selectedPid=null,qrSelected={};
 var scanStream=null,scanRAF=null,acInp,acList,hiIdx=-1;
 var pinBuffer='',pinCallback=null;
-var fcatList=[],fsinList=[];
+var fcatList=[],fsinList=[],fprovList=[];
 var cargaCants={};
 
 function G(id){return document.getElementById(id);}
 function showLoad(v){G('loading').style.display=v?'flex':'none';}
 function showScreen(id){
-  ['screen-setup','screen-login','screen-reg'].forEach(function(s){G(s).classList.remove('on');});
+  ['screen-login','screen-reg'].forEach(function(s){G(s).classList.remove('on');});
   G('main-app').classList.remove('on');
   if(id==='main')G('main-app').classList.add('on');
   else G('screen-'+id).classList.add('on');
@@ -502,14 +581,6 @@ function getSins(p){if(!p.sins)return[];if(typeof p.sins==='string')return[p.sin
 function allCats(){var set={};pArr().forEach(function(p){getCats(p).forEach(function(c){if(c)set[c]=1;});});return Object.keys(set).sort();}
 function matchSearch(p,q){if(!q)return true;var lq=q.toLowerCase();return p.nom.toLowerCase().includes(lq)||p.cod.toLowerCase().includes(lq)||getCats(p).join(' ').toLowerCase().includes(lq)||getSins(p).some(function(s){return s.toLowerCase().includes(lq);});}
 
-function tryLoadCfg(){try{var s=localStorage.getItem('sr_cfg');if(s){var c=JSON.parse(s);if(c&&c.apiKey)return c;}}catch(e){}return null;}
-function parseCfg(txt){
-  try{var obj={};var pairs=txt.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"([^"]*)"/g);
-  if(!pairs||pairs.length<3)return null;
-  pairs.forEach(function(pair){var m=pair.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"([^"]*)"/);if(m)obj[m[1]]=m[2];});
-  return obj.apiKey?obj:null;}catch(e){return null;}
-}
-
 function initFB(cfg){
   showLoad(true);
   try{
@@ -518,15 +589,8 @@ function initFB(cfg){
     fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function(){
       fbAuth.onAuthStateChanged(function(user){if(user){currentUser=user;startApp();}else{showScreen('login');}});
     }).catch(function(){fbAuth.onAuthStateChanged(function(user){if(user){currentUser=user;startApp();}else{showScreen('login');}});});
-  }catch(e){showLoad(false);showErr('err-setup','Error: '+e.message);}
+  }catch(e){showLoad(false);alert('Error Firebase: '+e.message);}
 }
-
-G('btn-setup').onclick=function(){
-  var cfg=parseCfg(G('setup-cfg').value.trim());
-  if(!cfg||!cfg.apiKey){showErr('err-setup','No se pudo leer el config.');return;}
-  if(!cfg.databaseURL){showErr('err-setup','Falta databaseURL.');return;}
-  localStorage.setItem('sr_cfg',JSON.stringify(cfg));initFB(cfg);
-};
 G('btn-toreg').onclick=function(){showScreen('reg');};
 G('btn-tologin').onclick=function(){showScreen('login');};
 G('btn-login').onclick=function(){
@@ -581,6 +645,14 @@ function startApp(){
     var pg=document.querySelector('.pg.on');
     if(pg&&pg.id==='pg-prest')rPrest();
   });
+  fbDb.ref('proveedores').on('value',function(snap){
+    proveedores=snap.val()||{};
+    updProvSelect();
+    var pg=document.querySelector('.pg.on');
+    if(pg&&pg.id==='pg-prov')rProv();
+    var pgp=document.querySelector('.pg.on');
+    if(pgp&&pgp.id==='pg-prod')rProd();
+  });
   fbDb.ref('movimientos').on('value',function(snap){
     movimientos=snap.val()||{};
     var pg=document.querySelector('.pg.on');
@@ -614,6 +686,8 @@ function startApp(){
     fbDb.ref().update(upd).then(function(){G('modal-limpiar').classList.remove('on');rHist();alert('Historial limpiado.');}).catch(function(e){alert('Error: '+e.message);});
   };
 
+  initProv();
+  G('qprov').oninput=rProv;
   goPage('dash');
 }
 
@@ -651,9 +725,9 @@ function goPage(name){
   G('pg-'+name).classList.add('on');G('t-'+name).classList.add('active');
   stopCam();
   if(name==='dash')rDash();if(name==='prod')rProd();if(name==='mov')rMovForm();
-  if(name==='carga')rCarga();if(name==='hist')rHist();if(name==='qr')rQR();if(name==='prest')rPrest();
+  if(name==='carga')rCarga();if(name==='hist')rHist();if(name==='qr')rQR();if(name==='prest')rPrest();if(name==='prov')rProv();
 }
-['dash','prod','mov','carga','hist','qr','prest'].forEach(function(n){G('t-'+n).onclick=function(){goPage(n);};});
+['dash','prod','mov','carga','hist','qr','prest','prov'].forEach(function(n){G('t-'+n).onclick=function(){goPage(n);};});
 
 function rDash(){
   var pa=pArr(),ma=mArr();
@@ -683,10 +757,12 @@ function rProd(){
         var prestActivos=prArr().filter(function(pr){return pr.estado==='activo'&&pr.pid===p.id;});
     var prestCant=prestActivos.reduce(function(s,pr){return s+pr.cant;},0);
     var prestTag=prestActivos.length>0?'<span class="badge" style="background:#FFF8E6;color:#7A5500;margin-left:4px">Prestado x'+prestCant+'</span>':'';
+    var provs=getProv(p).map(function(v){return'<span class="prov-tag">'+v+'</span>';}).join('');
     var sinHtml=sins?'<br><span style="font-size:11px;color:#7A6A9E">Alias: </span>'+sins:'';
+    var provHtml=provs?'<br>'+provs:'';
     rows+='<tr>';
     rows+='<td style="font-weight:700">'+p.cod+'</td>';
-    rows+='<td>'+p.nom+prestTag+sinHtml+'</td>';
+    rows+='<td>'+p.nom+prestTag+sinHtml+provHtml+'</td>';
     rows+='<td>'+cats+'</td>';
     rows+='<td style="text-align:right">'+p.stock+'</td>';
     rows+='<td style="text-align:right;color:#7A6A9E">'+p.min+'</td>';
@@ -703,15 +779,14 @@ G('filtro-cat-prod').onchange=rProd;
 G('btn-exportar').onclick=function(){
   if(typeof XLSX==='undefined'){alert('Error: libreria Excel no cargada.');return;}
   var pa=pArr();
-  var data=[['Codigo','Nombre','Sinonimos','Categorias','Stock actual','Stock minimo','Estado']];
+  var data=[['Codigo','Nombre','Sinonimos','Categorias','Proveedores','Stock actual','Stock minimo','Estado']];
   pa.forEach(function(p){
     var estado=p.stock<=0?'Sin stock':p.stock<=p.min?'Stock bajo':'OK';
-    data.push([p.cod,p.nom,getSins(p).join(', '),getCats(p).join(', '),p.stock,p.min,estado]);
+    data.push([p.cod,p.nom,getSins(p).join(', '),getCats(p).join(', '),getProv(p).join(', '),p.stock,p.min,estado]);
   });
   var ws=XLSX.utils.aoa_to_sheet(data);
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Inventario');
-  // auto column width
   var cols=data[0].map(function(_,i){return{wch:Math.max.apply(null,data.map(function(r){return r[i]?String(r[i]).length:10;}))+2};});
   ws['!cols']=cols;
   XLSX.writeFile(wb,'StockRepuestos_'+new Date().toISOString().slice(0,10)+'.xlsx');
@@ -722,24 +797,61 @@ function renderFcatChips(){var c=G('fcat-chips');if(!c)return;c.innerHTML='';fca
 function renderFsinChips(){var c=G('fsin-chips');if(!c)return;c.innerHTML='';fsinList.forEach(function(v,i){var ch=document.createElement('span');ch.className='cat-chip sel';ch.style.background='#E6F1FB';ch.style.color='#185FA5';ch.style.borderColor='#B5D4F4';ch.innerHTML=v+' <span class="cat-chip-x" onclick="removeFsin('+i+')">x</span>';c.appendChild(ch);});}
 window.removeFcat=function(i){fcatList.splice(i,1);renderFcatChips();};
 window.removeFsin=function(i){fsinList.splice(i,1);renderFsinChips();};
-G('btn-fcat-add').onclick=function(){var v=G('fcat-input').value.trim();if(!v)return;if(fcatList.indexOf(v)<0)fcatList.push(v);G('fcat-input').value='';renderFcatChips();};
+// Autocompletado de categorias existentes
+var fcatAcIdx=-1;
+function renderFcatAC(){
+  var inp=G('fcat-input');var drop=G('fcat-aclist');
+  if(!inp||!drop)return;
+  var q=inp.value.trim().toLowerCase();
+  var cats=allCats().filter(function(c){return c.toLowerCase().includes(q)&&fcatList.indexOf(c)<0;});
+  if(!cats.length||!q){drop.style.display='none';return;}
+  drop.innerHTML='';
+  cats.slice(0,8).forEach(function(c,i){
+    var el=document.createElement('div');
+    el.style.cssText='padding:9px 12px;font-size:13px;color:#2D1F5E;cursor:pointer;border-bottom:1px solid #EDE6F9';
+    el.textContent=c;
+    el.onmousedown=function(e){e.preventDefault();};
+    el.onclick=function(){
+      if(fcatList.indexOf(c)<0)fcatList.push(c);
+      inp.value='';drop.style.display='none';fcatAcIdx=-1;renderFcatChips();
+    };
+    el.onmouseenter=function(){fcatAcIdx=i;Array.from(drop.children).forEach(function(ch,j){ch.style.background=j===i?'#F0EAF9':'';});};
+    drop.appendChild(el);
+  });
+  drop.style.display='block';
+}
+G('fcat-input').oninput=function(){fcatAcIdx=-1;renderFcatAC();};
+G('fcat-input').onfocus=function(){renderFcatAC();};
+G('fcat-input').onblur=function(){setTimeout(function(){var d=G('fcat-aclist');if(d)d.style.display='none';fcatAcIdx=-1;},150);};
+G('fcat-input').onkeydown=function(e){
+  var drop=G('fcat-aclist');var items=drop?Array.from(drop.children):[];
+  if(e.key==='ArrowDown'){e.preventDefault();fcatAcIdx=Math.min(fcatAcIdx+1,items.length-1);items.forEach(function(ch,j){ch.style.background=j===fcatAcIdx?'#F0EAF9':'';});}
+  else if(e.key==='ArrowUp'){e.preventDefault();fcatAcIdx=Math.max(fcatAcIdx-1,0);items.forEach(function(ch,j){ch.style.background=j===fcatAcIdx?'#F0EAF9':'';});}
+  else if(e.key==='Enter'){e.preventDefault();if(fcatAcIdx>=0&&items[fcatAcIdx]){items[fcatAcIdx].click();}else{G('btn-fcat-add').click();}}
+  else if(e.key==='Escape'){if(drop)drop.style.display='none';fcatAcIdx=-1;}
+};
+G('btn-fcat-add').onclick=function(){
+  var v=G('fcat-input').value.trim();if(!v)return;
+  if(fcatList.indexOf(v)<0)fcatList.push(v);
+  G('fcat-input').value='';var d=G('fcat-aclist');if(d)d.style.display='none';
+  renderFcatChips();
+};
 G('btn-fsin-add').onclick=function(){var v=G('fsin-input').value.trim().toLowerCase();if(!v)return;if(fsinList.indexOf(v)<0)fsinList.push(v);G('fsin-input').value='';renderFsinChips();};
-G('fcat-input').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();G('btn-fcat-add').click();}};
 G('fsin-input').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();G('btn-fsin-add').click();}};
 
 G('btn-nuevo').onclick=function(){
-  editId=null;fcatList=[];fsinList=[];G('mtit').textContent='Nuevo repuesto';
+  editId=null;fcatList=[];fsinList=[];fprovList=[];G('mtit').textContent='Nuevo repuesto';
   G('fcod').value='';G('fnom').value='';G('fcat-input').value='';G('fsin-input').value='';
-  renderFcatChips();renderFsinChips();
+  renderFcatChips();renderFsinChips();renderFprovChips();
   G('fstk').value=0;G('fstk').disabled=false;G('fmin').value=2;
   G('modal').classList.add('on');
 };
 window._ep=function(id){
   editId=id;var p=productos[id];
-  fcatList=getCats(p).slice();fsinList=getSins(p).slice();
+  fcatList=getCats(p).slice();fsinList=getSins(p).slice();fprovList=getProv(p).slice();
   G('mtit').textContent='Editar repuesto';
   G('fcod').value=p.cod;G('fnom').value=p.nom;G('fcat-input').value='';G('fsin-input').value='';
-  renderFcatChips();renderFsinChips();
+  renderFcatChips();renderFsinChips();renderFprovChips();
   G('fstk').value=p.stock;G('fstk').disabled=true;G('fmin').value=p.min;
   G('modal').classList.add('on');
 };
@@ -749,10 +861,10 @@ G('btn-save').onclick=function(){
   var cod=G('fcod').value.trim(),nom=G('fnom').value.trim();
   if(!cod||!nom){alert('Completa codigo y nombre');return;}
   var stk=parseInt(G('fstk').value)||0,min=parseInt(G('fmin').value)||0;
-  if(editId){fbDb.ref('productos/'+editId).update({cod:cod,nom:nom,cats:fcatList,sins:fsinList,min:min});}
+  if(editId){fbDb.ref('productos/'+editId).update({cod:cod,nom:nom,cats:fcatList,sins:fsinList,provs:fprovList,min:min});}
   else{
     if(pArr().find(function(p){return p.cod===cod;})){alert('Codigo ya existente');return;}
-    var nid=uid();fbDb.ref('productos/'+nid).set({id:nid,cod:cod,nom:nom,cats:fcatList,sins:fsinList,stock:stk,min:min});
+    var nid=uid();fbDb.ref('productos/'+nid).set({id:nid,cod:cod,nom:nom,cats:fcatList,sins:fsinList,provs:fprovList,stock:stk,min:min});
   }
   G('modal').classList.remove('on');
 };
@@ -1124,8 +1236,143 @@ window.eliminarPrest=function(id){
   if(!confirm('Eliminar este prestamo?'))return;
   fbDb.ref('prestamos/'+id).remove().then(function(){rPrest();});
 };
-var cfg=tryLoadCfg();
-if(cfg)initFB(cfg);else{showLoad(false);showScreen('setup');}
+
+// ---- PROVEEDORES ----
+function prvArr(){return Object.values(proveedores);}
+function getProv(p){if(!p.provs)return[];if(typeof p.provs==='string')return[p.provs];return p.provs;}
+
+function updProvSelect(){
+  var sel=G('fprov-sel');if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">-- Seleccionar proveedor --</option>';
+  prvArr().sort(function(a,b){return a.nom.localeCompare(b.nom);}).forEach(function(pv){
+    var o=document.createElement('option');o.value=pv.nom;o.text=pv.nom;sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+
+var fprovList=[];
+function renderFprovChips(){
+  var c=G('fprov-chips');if(!c)return;
+  c.innerHTML='';
+  fprovList.forEach(function(v,i){
+    var ch=document.createElement('span');ch.className='cat-chip sel';
+    ch.style.background='#FEF0E6';ch.style.color='#9A5200';ch.style.borderColor='#F5C8A0';
+    ch.innerHTML=v+' <span class="cat-chip-x" onclick="removeFprov('+i+')">x</span>';
+    c.appendChild(ch);
+  });
+}
+window.removeFprov=function(i){fprovList.splice(i,1);renderFprovChips();};
+G('btn-fprov-add').onclick=function(){
+  var sel=G('fprov-sel');var v=sel.value;if(!v)return;
+  if(fprovList.indexOf(v)<0)fprovList.push(v);
+  sel.value='';renderFprovChips();
+};
+
+// CRUD Proveedores - inicializado en startApp para garantizar fbDb disponible
+var editProvId=null;
+function initProv(){
+  G('btn-nuevo-prov').onclick=function(){
+    editProvId=null;
+    G('mprov-tit').textContent='Nuevo proveedor';
+    G('prov-nom').value='';G('prov-tel').value='';G('prov-email').value='';G('prov-dir').value='';G('prov-notas').value='';
+    G('modal-prov').classList.add('on');
+  };
+  G('btn-prov-cancel').onclick=function(){G('modal-prov').classList.remove('on');};
+  G('btn-prov-save').onclick=function(){
+    var nom=G('prov-nom').value.trim();
+    if(!nom){alert('Ingresa el nombre del proveedor');return;}
+    var data={nom:nom,tel:G('prov-tel').value.trim(),email:G('prov-email').value.trim(),dir:G('prov-dir').value.trim(),notas:G('prov-notas').value.trim()};
+    if(editProvId){
+      fbDb.ref('proveedores/'+editProvId).update(data).then(function(){G('modal-prov').classList.remove('on');rProv();}).catch(function(e){alert('Error: '+e.message);});
+    } else {
+      var nid=uid();data.id=nid;
+      fbDb.ref('proveedores/'+nid).set(data).then(function(){G('modal-prov').classList.remove('on');rProv();}).catch(function(e){alert('Error: '+e.message);});
+    }
+  };
+
+  // Botón "+ Nuevo proveedor" desde modal de producto
+  G('btn-fprov-nuevo').onclick=function(){
+    G('qprov-nom').value='';G('qprov-tel').value='';G('qprov-email').value='';G('qprov-dir').value='';
+    G('qprov-err').style.display='none';
+    G('modal-prov-quick').classList.add('on');
+  };
+  G('btn-qprov-cancel').onclick=function(){G('modal-prov-quick').classList.remove('on');};
+  G('btn-qprov-save').onclick=function(){
+    var nom=G('qprov-nom').value.trim();
+    if(!nom){
+      var err=G('qprov-err');err.textContent='Ingresa el nombre del proveedor';err.style.display='block';return;
+    }
+    // Verificar que no exista ya
+    var existe=prvArr().find(function(p){return p.nom.toLowerCase()===nom.toLowerCase();});
+    if(existe){
+      // Ya existe, simplemente agregarlo al producto si no está
+      if(fprovList.indexOf(existe.nom)<0)fprovList.push(existe.nom);
+      G('modal-prov-quick').classList.remove('on');
+      renderFprovChips();
+      return;
+    }
+    var nid=uid();
+    var data={id:nid,nom:nom,tel:G('qprov-tel').value.trim(),email:G('qprov-email').value.trim(),dir:G('qprov-dir').value.trim(),notas:''};
+    fbDb.ref('proveedores/'+nid).set(data).then(function(){
+      // Agregar automáticamente al producto actual
+      if(fprovList.indexOf(nom)<0)fprovList.push(nom);
+      G('modal-prov-quick').classList.remove('on');
+      renderFprovChips();
+    }).catch(function(e){
+      var err=G('qprov-err');err.textContent='Error: '+e.message;err.style.display='block';
+    });
+  };
+}
+window._epv=function(id){
+  editProvId=id;var pv=proveedores[id];
+  G('mprov-tit').textContent='Editar proveedor';
+  G('prov-nom').value=pv.nom||'';G('prov-tel').value=pv.tel||'';G('prov-email').value=pv.email||'';
+  G('prov-dir').value=pv.dir||'';G('prov-notas').value=pv.notas||'';
+  G('modal-prov').classList.add('on');
+};
+window._dpv=function(id){
+  var pv=proveedores[id];
+  var prods=pArr().filter(function(p){return getProv(p).indexOf(pv.nom)>=0;});
+  var msg='Borrar proveedor "'+pv.nom+'"?';
+  if(prods.length)msg+=' (tiene '+prods.length+' producto'+(prods.length>1?'s':'')+' asociado'+(prods.length>1?'s':'')+')';
+  if(!confirm(msg))return;
+  fbDb.ref('proveedores/'+id).remove().then(function(){rProv();});
+};
+
+function rProv(){
+  var q=(G('qprov').value||'').toLowerCase();
+  var lista=prvArr().filter(function(pv){
+    return!q||pv.nom.toLowerCase().includes(q)||(pv.tel||'').includes(q)||(pv.dir||'').toLowerCase().includes(q)||(pv.email||'').toLowerCase().includes(q);
+  }).sort(function(a,b){return a.nom.localeCompare(b.nom);});
+  if(!lista.length){G('tprov').innerHTML='<div class="empty">No hay proveedores. Agrega uno con el botón de arriba.</div>';return;}
+  var html='';
+  lista.forEach(function(pv){
+    var prodCount=pArr().filter(function(p){return getProv(p).indexOf(pv.nom)>=0;}).length;
+    html+='<div class="prov-card">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">';
+    html+='<div>';
+    html+='<div class="prov-nom">'+pv.nom+'</div>';
+    if(pv.tel)html+='<div class="prov-dato">📞 '+pv.tel+'</div>';
+    if(pv.email)html+='<div class="prov-dato">✉️ '+pv.email+'</div>';
+    if(pv.dir)html+='<div class="prov-dato">📍 '+pv.dir+'</div>';
+    if(pv.notas)html+='<div class="prov-dato" style="color:#9A5200">📝 '+pv.notas+'</div>';
+    html+='<div class="prov-dato" style="margin-top:6px;color:#7C5CBF">'+prodCount+' producto'+(prodCount!==1?'s':'')+' asociado'+(prodCount!==1?'s':'')+'</div>';
+    html+='</div>';
+    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    if(pv.dir)html+='<a href="https://www.google.com/maps/search/'+encodeURIComponent(pv.dir)+'" target="_blank" class="ib sm">📍 Cómo llegar</a>';
+    html+='<button class="ib sm" onclick="_epv(&quot;'+pv.id+'&quot;)">Editar</button>';
+    html+='<button class="ib sm dan" onclick="_dpv(&quot;'+pv.id+'&quot;)">Borrar</button>';
+    html+='</div>';
+    html+='</div>';
+    html+='</div>';
+  });
+  G('tprov').innerHTML=html;
+}
+G('qprov').oninput=rProv;
+
+var FIREBASE_CONFIG={apiKey:"AIzaSyCAQAT5HqzDMDgXcRTKVrivFaQlshJBm-8",authDomain:"registro-de-repuestos-gsm.firebaseapp.com",databaseURL:"https://registro-de-repuestos-gsm-default-rtdb.firebaseio.com",projectId:"registro-de-repuestos-gsm",storageBucket:"registro-de-repuestos-gsm.firebasestorage.app",messagingSenderId:"1079609662292",appId:"1:1079609662292:web:e2aa227f92ad47766a06c1",measurementId:"G-14VCPZMCM4"};
+initFB(FIREBASE_CONFIG);
 })();
 </script>
 </body>
