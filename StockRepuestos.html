@@ -230,6 +230,30 @@ tr:hover td{background:#FAF7FF}
 .insumo-warn{color:#7A5500;font-weight:700}
 .insumo-danger{color:#8B2E2E;font-weight:700}
 .badge-freq{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:#F0EBF8;color:#7C5CBF}
+
+/* ── Pedidos ── */
+.ped-card{background:#fff;border:2px solid #D8CAF0;border-radius:12px;padding:16px;margin-bottom:12px;transition:border-color .2s}
+.ped-card.pendiente{border-left:4px solid #F0D080}
+.ped-card.en-camino{border-left:4px solid #90D4AC}
+.ped-card.atrasado{border-left:4px solid #F0A0A0}
+.ped-card-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.ped-card-prov{font-size:15px;font-weight:700;color:#2D1F5E}
+.ped-card-fecha{font-size:12px;color:#7A6A9E;margin-top:3px}
+.ped-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+.ped-items-list{background:#FAF7FF;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.ped-item-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #EDE6F9;font-size:13px}
+.ped-item-row:last-child{border-bottom:none}
+.ped-item-nom{color:#2D1F5E}
+.ped-item-cant{font-weight:700;color:#7C5CBF;white-space:nowrap}
+.badge-ped-pend{background:#FFF8E6;color:#7A5500;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-ped-cam{background:#EDFAF2;color:#1E6640;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-ped-atr{background:#FDEAEA;color:#8B2E2E;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.ped-modal-item{display:grid;grid-template-columns:1fr 80px 28px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #EDE6F9;font-size:13px}
+.ped-modal-item:last-child{border-bottom:none}
+.ped-stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.ped-sc{background:#fff;border-radius:10px;padding:12px;border:2px solid #D8CAF0;text-align:center}
+.ped-sl{font-size:11px;color:#7A6A9E;margin-bottom:4px}
+.ped-sv{font-size:20px;font-weight:700;color:#2D1F5E}
 </style>
 </head>
 <body>
@@ -285,6 +309,7 @@ tr:hover td{background:#FAF7FF}
     <div class="sidebar-item" id="t-prov" data-page="prov"><span class="si-icon">🏢</span>Proveedores</div>
     <div class="sidebar-section">Operaciones</div>
     <div class="sidebar-item" id="t-plan" data-page="plan"><span class="si-icon">🔧</span>Planificacion</div>
+    <div class="sidebar-item" id="t-ped" data-page="ped"><span class="si-icon">🛒</span>Pedidos</div>
     <div class="sidebar-footer">
       <button class="ib dan" id="btn-logout" style="width:100%;justify-content:center">Cerrar sesion</button>
     </div>
@@ -476,6 +501,112 @@ tr:hover td{background:#FAF7FF}
     <div id="tplan"></div>
   </div>
 
+  <div class="pg" id="pg-ped">
+    <div class="sh">
+      <span class="stit">Pedidos</span>
+      <div style="display:flex;gap:8px">
+        <button class="ib dan sm" id="btn-limpiar-ped">Limpiar recibidos</button>
+        <button class="ib pri" id="btn-nuevo-ped">+ Nuevo pedido</button>
+      </div>
+    </div>
+    <!-- Stats -->
+    <div class="ped-stats-bar" id="ped-stats"></div>
+    <!-- Filtros -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">
+      <div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Estado</div>
+        <select id="fped-estado" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <option value="">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en-camino">En camino</option>
+          <option value="recibido">Recibido</option>
+          <option value="atrasado">Atrasado</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Buscar</div>
+        <input type="text" id="qped" placeholder="Proveedor o producto..." style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none;width:220px">
+      </div>
+      <div>
+        <div style="font-size:11px;color:#7A6A9E;margin-bottom:3px;font-weight:700">Llegada estimada</div>
+        <select id="fped-llegada" style="padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <option value="">Cualquier fecha</option>
+          <option value="hoy">Hoy</option>
+          <option value="semana">Esta semana</option>
+          <option value="mes">Este mes</option>
+          <option value="atrasados">Solo atrasados</option>
+        </select>
+      </div>
+    </div>
+    <div id="tped"></div>
+  </div>
+
+</div>
+
+<!-- Modal: Nuevo/editar pedido -->
+<div class="mbg" id="modal-ped">
+  <div class="modal" style="width:580px;max-width:97vw">
+    <span class="mtit" id="mped-tit">Nuevo pedido</span>
+    <div class="frow">
+      <div class="mfg">
+        <label class="mfl">Proveedor (lista)</label>
+        <select id="ped-prov-sel" style="width:100%;padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+          <option value="">-- Sin proveedor --</option>
+        </select>
+      </div>
+      <div class="mfg">
+        <label class="mfl">O escribi el proveedor</label>
+        <input type="text" id="ped-prov-libre" placeholder="Nombre del proveedor...">
+      </div>
+    </div>
+    <div class="frow">
+      <div class="mfg">
+        <label class="mfl">Fecha del pedido *</label>
+        <input type="date" id="ped-fecha-pedido">
+      </div>
+      <div class="mfg">
+        <label class="mfl">Llegada estimada</label>
+        <input type="date" id="ped-fecha-llegada">
+      </div>
+    </div>
+    <div class="mfg">
+      <label class="mfl">Estado</label>
+      <select id="ped-estado-sel" style="width:100%;padding:8px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+        <option value="pendiente">Pendiente</option>
+        <option value="en-camino">En camino</option>
+        <option value="recibido">Recibido</option>
+        <option value="atrasado">Atrasado</option>
+      </select>
+    </div>
+    <div class="mfg">
+      <label class="mfl">Notas / observaciones</label>
+      <textarea id="ped-notas" rows="2" style="resize:none" placeholder="Numero de orden, condiciones, etc."></textarea>
+    </div>
+    <div style="border-top:2px solid #EDE6F9;padding-top:14px;margin-top:4px">
+      <div style="font-size:13px;font-weight:700;color:#2D1F5E;margin-bottom:10px">📦 Productos pedidos</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <select id="ped-cat-filtro" style="padding:7px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:12px;background:#fff;color:#2D1F5E;outline:none;flex:1;min-width:120px">
+          <option value="">Todas las categorias</option>
+        </select>
+        <div style="flex:2;min-width:160px;position:relative" id="ped-acwrap">
+          <input type="text" class="acinp" id="ped-acinp" placeholder="Buscar repuesto del inventario...">
+          <div class="aclist" id="ped-aclist"></div>
+        </div>
+        <input type="number" id="ped-cant" min="1" value="1" style="width:64px;padding:7px 8px;font-size:13px;border:2px solid #D8CAF0;border-radius:8px;outline:none">
+        <button class="ib sm pri" id="btn-ped-add-item" style="white-space:nowrap">+ Agregar</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <input type="text" id="ped-item-libre" placeholder="O escribi un producto sin inventario..." style="flex:3;padding:7px 10px;border:2px solid #D8CAF0;border-radius:8px;font-size:13px;background:#fff;color:#2D1F5E;outline:none">
+        <input type="number" id="ped-item-libre-cant" min="1" value="1" style="width:64px;padding:7px 8px;font-size:13px;border:2px solid #D8CAF0;border-radius:8px;outline:none">
+        <button class="ib sm" id="btn-ped-add-libre" style="white-space:nowrap">+ Libre</button>
+      </div>
+      <div id="ped-items-lista" style="max-height:200px;overflow-y:auto;border:1px solid #EDE6F9;border-radius:8px;background:#FAF7FF;margin-top:4px"></div>
+    </div>
+    <div class="mact" style="margin-top:16px">
+      <button class="ib" id="btn-ped-cancel">Cancelar</button>
+      <button class="ib pri" id="btn-ped-save">Guardar pedido</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal: Nueva/editar actividad + insumos -->
@@ -662,6 +793,7 @@ tr:hover td{background:#FAF7FF}
 var fbAuth=null,fbDb=null,currentUser=null;
 var proveedores={};
 var actividades={};
+var pedidos={};
 var productos={},movimientos={};
 var editId=null,selectedPid=null,qrSelected={};
 var scanStream=null,scanRAF=null,acInp,acList,hiIdx=-1;
@@ -764,6 +896,7 @@ function startApp(){
   fbDb.ref('proveedores').on('value',function(snap){
     proveedores=snap.val()||{};
     updProvSelect();
+    updPedProvSelect();
     var pg=document.querySelector('.pg.on');
     if(pg&&pg.id==='pg-prov')rProv();
     var pgp=document.querySelector('.pg.on');
@@ -773,6 +906,12 @@ function startApp(){
     movimientos=snap.val()||{};
     var pg=document.querySelector('.pg.on');
     if(pg){var id=pg.id;if(id==='pg-dash')rDash();if(id==='pg-hist')rHist();}
+  });
+  fbDb.ref('pedidos').on('value',function(snap){
+    pedidos=snap.val()||{};
+    var pg=document.querySelector('.pg.on');
+    if(pg&&pg.id==='pg-ped')rPed();
+    if(pg&&pg.id==='pg-dash')rDash();
   });
 
   G('btn-limpiar').onclick=function(){
@@ -998,9 +1137,10 @@ function updateCatSelects(){
   cats.forEach(function(c){var o=document.createElement('option');o.value=c;o.text=c;ccs.appendChild(o);});
   var osc=document.createElement('option');osc.value='__sin_categoria__';osc.text='Sin categoria';ccs.appendChild(osc);
   ccs.value=cur2;
+  pedUpdCatFiltro();
 }
 
-var PAGE_TITLES={"dash": "Dashboard", "prod": "Productos", "mov": "Retiros", "carga": "Carga de inventario", "hist": "Historial", "qr": "Codigos QR", "prest": "Prestamos", "prov": "Proveedores", "plan": "Planificacion"};
+var PAGE_TITLES={"dash": "Dashboard", "prod": "Productos", "mov": "Retiros", "carga": "Carga de inventario", "hist": "Historial", "qr": "Codigos QR", "prest": "Prestamos", "prov": "Proveedores", "plan": "Planificacion", "ped": "Pedidos"};
 function goPage(name){
   document.querySelectorAll('.pg').forEach(function(el){el.classList.remove('on');});
   document.querySelectorAll('.sidebar-item').forEach(function(el){el.classList.remove('active');});
@@ -1010,9 +1150,9 @@ function goPage(name){
   stopCam();closeSidebar();
   if(name==='dash')rDash();if(name==='prod')rProd();if(name==='mov')rMovForm();
   if(name==='carga')rCarga();if(name==='hist')rHist();if(name==='qr')rQR();
-  if(name==='prest')rPrest();if(name==='prov')rProv();if(name==='plan')rPlan();
+  if(name==='prest')rPrest();if(name==='prov')rProv();if(name==='plan')rPlan();if(name==='ped')rPed();
 }
-['dash','prod','mov','carga','hist','qr','prest','prov','plan'].forEach(function(n){
+['dash','prod','mov','carga','hist','qr','prest','prov','plan','ped'].forEach(function(n){
   var el=G('t-'+n);if(el)el.onclick=function(){goPage(n);};
 });
 
@@ -1023,7 +1163,16 @@ function rDash(){
   var mhoy=ma.filter(function(m){return new Date(m.ts).toDateString()===hoy;}).length;
   G('stats').innerHTML='<div class="sc"><span class="sl">Repuestos</span><span class="sv">'+total+'</span></div><div class="sc"><span class="sl">Stock bajo</span><span class="sv'+(bajos>0?' w':'')+'">'+bajos+'</span></div><div class="sc"><span class="sl">Sin stock</span><span class="sv'+(sin>0?' d':'')+'">'+sin+'</span></div><div class="sc"><span class="sl">Movimientos hoy</span><span class="sv">'+mhoy+'</span></div>';
   var al=pa.filter(function(p){return p.stock<=p.min;});
-  G('alertas').innerHTML=al.length?'<div class="abar">'+al.length+' repuesto'+(al.length>1?'s':'')+' con stock bajo: '+al.slice(0,3).map(function(p){return p.nom;}).join(', ')+(al.length>3?'...':'')+'</div>':'';
+  // Alerta stock bajo
+  var alertasHTML=al.length?'<div class="abar">⚠ '+al.length+' repuesto'+(al.length>1?'s':'')+' con stock bajo: '+al.slice(0,3).map(function(p){return p.nom;}).join(', ')+(al.length>3?'...':'')+'</div>':'';
+  // Alerta pedidos atrasados
+  var hoyD=new Date();hoyD.setHours(0,0,0,0);
+  var pedAtr=pedArr().filter(function(p){
+    var hl=p.fechaLlegada?new Date(p.fechaLlegada+'T00:00:00'):null;
+    return hl&&hl<hoyD&&p.estado!=='recibido';
+  });
+  if(pedAtr.length)alertasHTML+='<div class="abar" style="background:#FDEAEA;border-color:#F0B0B0;color:#8B2E2E">🚚 '+pedAtr.length+' pedido'+(pedAtr.length>1?'s':'')+' atrasado'+(pedAtr.length>1?'s':'')+': '+pedAtr.slice(0,3).map(function(p){return p.proveedor;}).join(', ')+(pedAtr.length>3?'...':'')+'</div>';
+  G('alertas').innerHTML=alertasHTML;
   var rec=ma.sort(function(a,b){return b.ts-a.ts;}).slice(0,6),rows='';
   if(!rec.length){G('dmov').innerHTML='<div class="empty">No hay movimientos aun</div>';return;}
   rec.forEach(function(m){var p=productos[m.pid];if(!p)return;rows+='<tr><td>'+fmt(m.ts)+'</td><td>'+p.cod+'</td><td>'+p.nom+'</td><td><span class="badge '+(m.tipo==='entrada'?'bent':'bsal')+'">'+(m.tipo==='entrada'?'Entrada':'Salida')+'</span></td><td style="text-align:right">'+(m.tipo==='salida'?'-':'+')+m.cant+'</td><td style="color:#7A6A9E">'+(m.user||'-')+'</td></tr>';});
@@ -1695,6 +1844,310 @@ function rPlan(){
     html+='</div></div>';
   });
   G('tplan').innerHTML=html;
+}
+
+// ── PEDIDOS ──────────────────────────────────────────────────────────────────
+function pedArr(){return Object.values(pedidos);}
+
+var _pedItemsTmp=[];  // items temporales mientras el modal está abierto
+var _pedEditId=null;
+var _pedSelPid=null;
+
+// ── Selects de proveedor en modal pedido ──
+function updPedProvSelect(){
+  var sel=G('ped-prov-sel');if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">-- Sin proveedor --</option>';
+  prvArr().sort(function(a,b){return a.nom.localeCompare(b.nom);}).forEach(function(pv){
+    var o=document.createElement('option');o.value=pv.nom;o.text=pv.nom;sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+
+// ── Autocompletado buscador de productos en modal pedido ──
+function pedRenderAC(){
+  var inp=G('ped-acinp'),lst=G('ped-aclist');if(!inp||!lst)return;
+  var q=(inp.value||'').toLowerCase().trim();
+  var catF=(G('ped-cat-filtro')||{}).value||'';
+  var lista=pArr().filter(function(p){return matchSearch(p,q)&&(!catF||getCats(p).indexOf(catF)>=0);}).slice(0,10);
+  if(!lista.length){lst.innerHTML='<span class="acmt">Sin resultados</span>';lst.classList.add('on');return;}
+  lst.innerHTML='';
+  lista.forEach(function(p){
+    var el=document.createElement('div');el.className='acitem';
+    el.innerHTML='<span class="accod">'+p.cod+'</span>'+p.nom+'<span class="acstk">Stock: '+p.stock+'</span>';
+    el.onclick=function(){_pedSelPid=p.id;inp.value='['+p.cod+'] '+p.nom;inp.classList.add('sel');lst.classList.remove('on');};
+    lst.appendChild(el);
+  });
+  lst.classList.add('on');
+}
+
+// ── Render lista de items en modal pedido ──
+function pedRenderLista(){
+  var el=G('ped-items-lista');if(!el)return;
+  if(!_pedItemsTmp.length){
+    el.innerHTML='<div style="padding:12px;font-size:12px;color:#B0A0CC;text-align:center">Sin productos. Buscá uno arriba o escribí uno libre.</div>';
+    return;
+  }
+  var html='<div class="ped-modal-item insumo-row-head" style="padding:6px 10px;display:grid;grid-template-columns:1fr 80px 28px;gap:8px"><span>Producto</span><span style="text-align:center">Cant.</span><span></span></div>';
+  _pedItemsTmp.forEach(function(item,i){
+    var nom=item.pid?(productos[item.pid]?('<strong>'+(productos[item.pid].cod)+'</strong> '+productos[item.pid].nom):item.nom):item.nom;
+    html+='<div class="ped-modal-item" style="padding:6px 10px;display:grid;grid-template-columns:1fr 80px 28px;gap:8px;align-items:center;border-bottom:1px solid #EDE6F9;font-size:13px">'
+         +'<span>'+nom+'</span>'
+         +'<span style="text-align:center;font-weight:700;color:#7C5CBF">'+item.cant+'</span>'
+         +'<span><button class="ib sm dan" style="padding:2px 8px" onclick="pedQuitarItem('+i+')">×</button></span>'
+         +'</div>';
+  });
+  el.innerHTML=html;
+}
+
+window.pedQuitarItem=function(i){_pedItemsTmp.splice(i,1);pedRenderLista();};
+
+// ── Abrir/cerrar modal ──
+function pedCerrarModal(){
+  G('modal-ped').classList.remove('on');
+  _pedItemsTmp=[];_pedEditId=null;_pedSelPid=null;
+}
+
+function pedAbrirModal(ped){
+  _pedEditId=ped?ped.id:null;
+  _pedSelPid=null;
+  _pedItemsTmp=ped&&ped.items?JSON.parse(JSON.stringify(ped.items)):[];
+  G('mped-tit').textContent=ped?'Editar pedido':'Nuevo pedido';
+  var hoy=new Date().toISOString().slice(0,10);
+  G('ped-fecha-pedido').value=ped?ped.fechaPedido||hoy:hoy;
+  G('ped-fecha-llegada').value=ped?ped.fechaLlegada||'':'';
+  G('ped-estado-sel').value=ped?ped.estado||'pendiente':'pendiente';
+  G('ped-notas').value=ped?ped.notas||'':'';
+  G('ped-prov-libre').value=ped?ped.proveedor||'':'';
+  updPedProvSelect();
+  // Si el proveedor existe en la lista, pre-seleccionarlo; si no, ponerlo en libre
+  if(ped&&ped.proveedor){
+    var enLista=prvArr().find(function(pv){return pv.nom===ped.proveedor;});
+    if(enLista){G('ped-prov-sel').value=ped.proveedor;G('ped-prov-libre').value='';}
+    else{G('ped-prov-sel').value='';}
+  } else {G('ped-prov-sel').value='';}
+  pedUpdCatFiltro();
+  G('ped-acinp').value='';G('ped-acinp').classList.remove('sel');
+  G('ped-cant').value=1;G('ped-aclist').classList.remove('on');
+  G('ped-item-libre').value='';G('ped-item-libre-cant').value=1;
+  pedRenderLista();
+  G('modal-ped').classList.add('on');
+}
+
+// ── Eventos del modal ──
+G('ped-acinp').oninput=function(){_pedSelPid=null;this.classList.remove('sel');pedRenderAC();};
+G('ped-acinp').onfocus=function(){pedRenderAC();};
+G('ped-cat-filtro').onchange=function(){pedRenderAC();};
+document.addEventListener('click',function(e){
+  var w=G('ped-acwrap');if(w&&!w.contains(e.target)){var l=G('ped-aclist');if(l)l.classList.remove('on');}
+});
+
+G('btn-ped-add-item').onclick=function(){
+  if(!_pedSelPid){alert('Seleccioná un repuesto del buscador');return;}
+  var cant=parseInt(G('ped-cant').value)||1;
+  var p=productos[_pedSelPid];
+  // Evitar duplicados: si ya existe, sumar cantidad
+  var existe=_pedItemsTmp.find(function(it){return it.pid===_pedSelPid;});
+  if(existe){existe.cant+=cant;}
+  else{_pedItemsTmp.push({pid:_pedSelPid,nom:p.cod+' - '+p.nom,cant:cant});}
+  _pedSelPid=null;
+  G('ped-acinp').value='';G('ped-acinp').classList.remove('sel');
+  G('ped-cant').value=1;G('ped-aclist').classList.remove('on');
+  pedRenderLista();
+};
+
+G('btn-ped-add-libre').onclick=function(){
+  var nom=G('ped-item-libre').value.trim();
+  if(!nom){alert('Escribi el nombre del producto');return;}
+  var cant=parseInt(G('ped-item-libre-cant').value)||1;
+  var existe=_pedItemsTmp.find(function(it){return!it.pid&&it.nom===nom;});
+  if(existe){existe.cant+=cant;}
+  else{_pedItemsTmp.push({pid:null,nom:nom,cant:cant});}
+  G('ped-item-libre').value='';G('ped-item-libre-cant').value=1;
+  pedRenderLista();
+};
+
+G('btn-ped-cancel').onclick=function(){pedCerrarModal();};
+
+G('btn-ped-save').onclick=function(){
+  var fechaPedido=G('ped-fecha-pedido').value;
+  if(!fechaPedido){alert('Ingresa la fecha del pedido');return;}
+  var provSel=G('ped-prov-sel').value;
+  var provLibre=G('ped-prov-libre').value.trim();
+  var proveedor=provSel||provLibre||'Sin proveedor';
+  var data={
+    proveedor:proveedor,
+    fechaPedido:fechaPedido,
+    fechaLlegada:G('ped-fecha-llegada').value||'',
+    estado:G('ped-estado-sel').value||'pendiente',
+    notas:G('ped-notas').value.trim(),
+    items:_pedItemsTmp.slice()
+  };
+  if(_pedEditId){
+    data.id=_pedEditId;
+    fbDb.ref('pedidos/'+_pedEditId).update(data)
+      .then(function(){pedCerrarModal();rPed();})
+      .catch(function(e){alert('Error: '+e.message);});
+  } else {
+    var nid=uid();data.id=nid;data.ts=Date.now();
+    fbDb.ref('pedidos/'+nid).set(data)
+      .then(function(){pedCerrarModal();rPed();})
+      .catch(function(e){alert('Error: '+e.message);});
+  }
+};
+
+G('btn-nuevo-ped').onclick=function(){pedAbrirModal(null);};
+
+G('btn-limpiar-ped').onclick=function(){
+  var recibidos=pedArr().filter(function(p){return p.estado==='recibido';});
+  if(!recibidos.length){alert('No hay pedidos recibidos para limpiar.');return;}
+  if(!confirm('Borrar '+recibidos.length+' pedido'+(recibidos.length>1?'s':'')+' recibido'+(recibidos.length>1?'s':'')+' del historial?'))return;
+  var upd={};recibidos.forEach(function(p){upd['pedidos/'+p.id]=null;});
+  fbDb.ref().update(upd).then(function(){rPed();alert('Pedidos recibidos eliminados.');}).catch(function(e){alert('Error: '+e.message);});
+};
+
+window._editPed=function(id){var ped=pedidos[id];if(ped)pedAbrirModal(ped);};
+window._delPed=function(id){
+  var ped=pedidos[id];if(!ped)return;
+  if(!confirm('Eliminar este pedido?'))return;
+  fbDb.ref('pedidos/'+id).remove().then(function(){rPed();});
+};
+window._cambiarEstadoPed=function(id,estado){
+  fbDb.ref('pedidos/'+id+'/estado').set(estado).then(function(){rPed();});
+};
+
+// ── Helpers de fecha ──
+function pedFiltrarLlegada(ped,filtro){
+  if(!filtro)return true;
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var hl=ped.fechaLlegada?new Date(ped.fechaLlegada+'T00:00:00'):null;
+  if(filtro==='hoy'){return hl&&hl.getTime()===hoy.getTime();}
+  if(filtro==='semana'){var fin=new Date(hoy);fin.setDate(fin.getDate()+7);return hl&&hl>=hoy&&hl<=fin;}
+  if(filtro==='mes'){var finM=new Date(hoy);finM.setDate(finM.getDate()+30);return hl&&hl>=hoy&&hl<=finM;}
+  if(filtro==='atrasados'){return hl&&hl<hoy&&ped.estado!=='recibido';}
+  return true;
+}
+
+function pedEstadoBadge(p){
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var hl=p.fechaLlegada?new Date(p.fechaLlegada+'T00:00:00'):null;
+  var atrasado=hl&&hl<hoy&&p.estado!=='recibido';
+  if(p.estado==='recibido')return'<span class="badge bok">Recibido</span>';
+  if(p.estado==='en-camino'||atrasado){
+    if(atrasado)return'<span class="badge-ped-atr">Atrasado</span>';
+    return'<span class="badge-ped-cam">En camino</span>';
+  }
+  return'<span class="badge-ped-pend">Pendiente</span>';
+}
+
+function pedCardClass(p){
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var hl=p.fechaLlegada?new Date(p.fechaLlegada+'T00:00:00'):null;
+  if(p.estado==='recibido')return'ped-card';
+  if(hl&&hl<hoy)return'ped-card atrasado';
+  if(p.estado==='en-camino')return'ped-card en-camino';
+  return'ped-card pendiente';
+}
+
+// ── Render principal de Pedidos ──
+function rPed(){
+  var q=(G('qped').value||'').toLowerCase();
+  var fEstado=G('fped-estado').value;
+  var fLlegada=G('fped-llegada').value;
+  var lista=pedArr()
+    .filter(function(p){
+      if(fEstado){
+        var hoy=new Date();hoy.setHours(0,0,0,0);
+        var hl=p.fechaLlegada?new Date(p.fechaLlegada+'T00:00:00'):null;
+        var atrasado=hl&&hl<hoy&&p.estado!=='recibido';
+        var estadoEfectivo=atrasado?'atrasado':p.estado;
+        if(fEstado!==estadoEfectivo)return false;
+      }
+      if(!pedFiltrarLlegada(p,fLlegada))return false;
+      if(q){
+        var enProv=(p.proveedor||'').toLowerCase().includes(q);
+        var enItems=(p.items||[]).some(function(it){return it.nom.toLowerCase().includes(q);});
+        if(!enProv&&!enItems)return false;
+      }
+      return true;
+    })
+    .sort(function(a,b){
+      // recibidos al fondo
+      if(a.estado==='recibido'&&b.estado!=='recibido')return 1;
+      if(b.estado==='recibido'&&a.estado!=='recibido')return-1;
+      return(a.fechaLlegada||'9999').localeCompare(b.fechaLlegada||'9999');
+    });
+
+  // Stats
+  var todos=pedArr();
+  var hoyStats=new Date();hoyStats.setHours(0,0,0,0);
+  var nPend=todos.filter(function(p){return p.estado==='pendiente';}).length;
+  var nCam=todos.filter(function(p){return p.estado==='en-camino';}).length;
+  var nRec=todos.filter(function(p){return p.estado==='recibido';}).length;
+  var nAtr=todos.filter(function(p){
+    var hl=p.fechaLlegada?new Date(p.fechaLlegada+'T00:00:00'):null;
+    return hl&&hl<hoyStats&&p.estado!=='recibido';
+  }).length;
+  G('ped-stats').innerHTML=
+    '<div class="ped-sc"><div class="ped-sl">Pendientes</div><div class="ped-sv" style="color:#7A5500">'+nPend+'</div></div>'+
+    '<div class="ped-sc"><div class="ped-sl">En camino</div><div class="ped-sv" style="color:#1E6640">'+nCam+'</div></div>'+
+    '<div class="ped-sc"><div class="ped-sl">Atrasados</div><div class="ped-sv" style="color:#8B2E2E">'+nAtr+'</div></div>';
+
+  if(!lista.length){G('tped').innerHTML='<div class="empty">No hay pedidos que coincidan. Creá uno con el botón de arriba.</div>';return;}
+
+  var html='';
+  lista.forEach(function(ped){
+    var items=ped.items||[];
+    var nItems=items.length;
+    var totalUnits=items.reduce(function(s,it){return s+it.cant;},0);
+    html+='<div class="'+pedCardClass(ped)+'">';
+    html+='<div class="ped-card-head">';
+    html+='<div>';
+    html+='<div class="ped-card-prov">'+ped.proveedor+'</div>';
+    html+='<div class="ped-card-fecha">📅 Pedido: '+(ped.fechaPedido?fmtFechaPlan(ped.fechaPedido):'-')+(ped.fechaLlegada?' &nbsp;|&nbsp; 🚚 Llegada est.: '+fmtFechaPlan(ped.fechaLlegada):'')+'</div>';
+    if(nItems)html+='<div class="ped-card-fecha" style="color:#7C5CBF">📦 '+nItems+' producto'+(nItems!==1?'s':'')+' · '+totalUnits+' unidad'+(totalUnits!==1?'es':'')+'</div>';
+    if(ped.notas)html+='<div class="ped-card-fecha" style="color:#9A5200">📝 '+ped.notas+'</div>';
+    html+='</div>';
+    html+=pedEstadoBadge(ped);
+    html+='</div>';
+    // Items
+    if(nItems){
+      html+='<div class="ped-items-list">';
+      items.forEach(function(it){
+        html+='<div class="ped-item-row"><span class="ped-item-nom">'+it.nom+'</span><span class="ped-item-cant">× '+it.cant+'</span></div>';
+      });
+      html+='</div>';
+    } else {
+      html+='<div style="font-size:12px;color:#B0A0CC;margin-bottom:8px">Sin productos detallados</div>';
+    }
+    // Acciones
+    var hoyBtn=new Date();hoyBtn.setHours(0,0,0,0);
+    var hlBtn=ped.fechaLlegada?new Date(ped.fechaLlegada+'T00:00:00'):null;
+    var esAtrasado=hlBtn&&hlBtn<hoyBtn&&ped.estado!=='recibido';
+    html+='<div class="ped-card-actions">';
+    if(ped.estado!=='recibido'){
+      html+='<button class="ib sm grn" onclick="_cambiarEstadoPed(&quot;'+ped.id+'&quot;,&quot;recibido&quot;)">✓ Marcar recibido</button>';
+      if(ped.estado==='pendiente'||esAtrasado)html+='<button class="ib sm" style="background:#EDFAF2;color:#1E6640;border-color:#90D4AC" onclick="_cambiarEstadoPed(&quot;'+ped.id+'&quot;,&quot;en-camino&quot;)">🚚 En camino</button>';
+      if(ped.estado==='en-camino')html+='<button class="ib sm" onclick="_cambiarEstadoPed(&quot;'+ped.id+'&quot;,&quot;pendiente&quot;)">↩ Pendiente</button>';
+    }
+    html+='<button class="ib sm" onclick="_editPed(&quot;'+ped.id+'&quot;)">Editar</button>';
+    html+='<button class="ib sm dan" onclick="_delPed(&quot;'+ped.id+'&quot;)">Borrar</button>';
+    html+='</div>';
+    html+='</div>';
+  });
+  G('tped').innerHTML=html;
+}
+
+G('fped-estado').onchange=rPed;
+G('qped').oninput=rPed;
+G('fped-llegada').onchange=rPed;
+
+// Al abrir la página de pedidos también actualizar el select de categorías en el modal
+function pedUpdCatFiltro(){
+  var sel=G('ped-cat-filtro');if(!sel)return;
+  var cats=allCats();
+  sel.innerHTML='<option value="">Todas las categorias</option>';
+  cats.forEach(function(c){var o=document.createElement('option');o.value=c;o.text=c;sel.appendChild(o);});
 }
 
 var FIREBASE_CONFIG={apiKey:"AIzaSyCAQAT5HqzDMDgXcRTKVrivFaQlshJBm-8",authDomain:"registro-de-repuestos-gsm.firebaseapp.com",databaseURL:"https://registro-de-repuestos-gsm-default-rtdb.firebaseio.com",projectId:"registro-de-repuestos-gsm",storageBucket:"registro-de-repuestos-gsm.firebasestorage.app",messagingSenderId:"1079609662292",appId:"1:1079609662292:web:e2aa227f92ad47766a06c1",measurementId:"G-14VCPZMCM4"};
